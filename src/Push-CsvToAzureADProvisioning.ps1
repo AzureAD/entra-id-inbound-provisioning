@@ -15,6 +15,9 @@ function ConvertTo-ScimBulkPayload {
         # Map input object properties to SCIM core user schema
         [Parameter(Mandatory = $false)]
         [hashtable] $AttributeMapping,
+        # Operations per bulk request
+        [Parameter(Mandatory = $false)]
+        [int] $OperationsPerRequest = 50,
         # PassThru Object
         [Parameter(Mandatory = $false)]
         [switch] $PassThru
@@ -32,6 +35,7 @@ function ConvertTo-ScimBulkPayload {
 
     process {
         foreach ($obj in $InputObject) {
+            #ToDo: Request batching: If the CSV file has more than 50 lines, create multiple SCIM bulk requests with batch size of 50 records in each request. Start new bulk object when max OperationsPerRequest is reached.
             $ScimOperationObject = [PSCustomObject][ordered]@{
                 "method" = "POST"
                 "bulkId" = [string](New-Guid)
@@ -96,6 +100,10 @@ function ConvertTo-ScimPayload {
                 "urn:ietf:params:scim:schemas:extension:csv:1.0:User" = $obj
             }
 
+            ## ToDo: Dynamically add additional core attributes to output object based on AttributeMapping.
+            # Write warning when AttributeMapping variable contains attribute not part of core schema. https://www.rfc-editor.org/rfc/rfc7643.html#section-3.1
+            # Need way to handle nested attribute components such as name with components of familyName and givenName.
+
             ## Return Object with SCIM Data Structure
             if ($PassThru) { $ScimObject }
             else { ConvertTo-Json $ScimObject -Depth 5 }
@@ -103,14 +111,21 @@ function ConvertTo-ScimPayload {
     }
 }
 
-Import-Csv ".\sampledata\worker.csv" | ConvertTo-ScimBulkPayload -AttributeMapping @{
+## ToDo: Add function for updating schema on Azure AD app based on sample input.
+
+
+## Sample usage
+Import-Csv ".\sampledata\csv-with-1000-records.csv" | Select-Object -First 2 | ConvertTo-ScimBulkPayload -AttributeMapping @{
     externalId = 'WorkerID'
     name = @{
         familyName = 'LastName'
         givenName  = 'FirstName'
     }
-    active     = { $_.'WorkerStatus' -eq 'Active' }
+    active     = { $_.'WorkerStatus' -eq 'Active' } # This does not work today, need way to transform source data to core user schema.
     userName   = 'UserID'
 }
 
+## ToDo: Post requests directly to the API endpoint: Accept Provisioning Job ID/API endpoint as input, authenticate using Graph API and send the SCIM payloads directly to the API endpoint. This logic should be added to a new function that allows pipeline input.
 #Invoke-RestMethod -Method Post '/bulk' -ContentType 'application/scim+json' -Body $ScimBulkPayload
+
+## ToDo: Check status and resend data for failed records: After timed delay of 40 minutes, query Provisioning Logs API endpoint for failed records and resend data.
