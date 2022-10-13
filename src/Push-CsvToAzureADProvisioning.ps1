@@ -1,3 +1,25 @@
+[CmdletBinding(DefaultParameterSetName = 'GenerateScimPayload')]
+param (
+    # 
+    [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+    [string] $Path,
+    # 
+    [Parameter(Mandatory = $false)]
+    [string] $ScimAttributeNamespace = "urn:ietf:params:scim:schemas:extension:csv:1.0:User",
+    # 
+    [Parameter(Mandatory = $false, ParameterSetName = 'GenerateScimPayload')]
+    [Parameter(Mandatory = $false, ParameterSetName = 'SendScimRequest')]
+    [hashtable] $AttributeMapping,
+    # 
+    [Parameter(Mandatory = $true, ParameterSetName = 'SendScimRequest')]
+    [Parameter(Mandatory = $true, ParameterSetName = 'UpdateScimSchema')]
+    [string] $ServicePrincipalId,
+    # 
+    [Parameter(Mandatory = $true, ParameterSetName = 'UpdateScimSchema')]
+    [switch] $UpdateSchema
+)
+
+#region Helper Functions
 
 <#
 .SYNOPSIS
@@ -5,36 +27,7 @@
 .EXAMPLE
     PS C:\>
 
-#>
-
-function Create-Batch{
-    [CmdletBinding()]
-    param (
-        [UInt64]$Size = [UInt64]::MaxValue,
-        [Parameter(Mandatory=$true, ValueFromPipeline=$true)]$InputObject
-    )
-    begin {
-        $Batch = [Collections.Generic.List[object]]::new() # is faster as [Collections.ObjectModel.Collection[psobject]]
-    }
-    process {
-        if ($Size) {
-            if ($Batch.get_Count() -ge $Size) {
-                ,@($Batch)
-                $Batch = [Collections.Generic.List[object]]::new()
-            }
-            $Batch.Add($_)
-        }
-        else { # if no size is provided, any top array will be unrolled (remove batches)
-            $_
-        }
-    }
-    End {
-        if ($Batch.get_Count()) {
-            ,@($Batch)
-        }
-    }
-    }
-    
+#>   
 function ConvertTo-ScimBulkPayload {
     [CmdletBinding()]
     param (
@@ -60,10 +53,12 @@ function ConvertTo-ScimBulkPayload {
         }
         $paramConvertToScimPayload = @{}
         if ($AttributeMapping) { $paramConvertToScimPayload['AttributeMapping'] = $AttributeMapping }
+        $ScimBulkObjectInstance = $ScimBulkObject.psobject.Copy()
     }
 
     process {
         foreach ($obj in $InputObject) {
+
             #ToDo: Request batching: If the CSV file has more than 50 lines, create multiple SCIM bulk requests with batch size of 50 records in each request. Start new bulk object when max OperationsPerRequest is reached.
             $ScimOperationObject = [PSCustomObject][ordered]@{
                 "method" = "POST"
@@ -71,14 +66,24 @@ function ConvertTo-ScimBulkPayload {
                 "path"   = "/users"
                 "data"   = ConvertTo-ScimPayload $obj -PassThru @paramConvertToScimPayload
             }
-            $ScimBulkObject.Operations.Add($ScimOperationObject)
+            $ScimBulkObjectInstance.Operations.Add($ScimOperationObject)
+
+            # Output object when max operations has been reached
+            if ($ScimBulkObjectInstance.Operations.Count -ge $OperationsPerRequest) {
+                if ($PassThru) { $ScimBulkObjectInstance }
+                else { ConvertTo-Json $ScimBulkObjectInstance -Depth 10 }
+                $ScimBulkObjectInstance = $ScimBulkObject.psobject.Copy()
+                $ScimBulkObjectInstance.Operations = New-Object System.Collections.Generic.List[pscustomobject]
+            }
         }
     }
 
     end {
-        ## Return Object with SCIM Data Structure
-        if ($PassThru) { $ScimBulkObject }
-        else { ConvertTo-Json $ScimBulkObject -Depth 10 }
+        if ($ScimBulkObjectInstance.Operations.Count -gt 0) {
+            ## Return Object with SCIM Data Structure
+            if ($PassThru) { $ScimBulkObjectInstance }
+            else { ConvertTo-Json $ScimBulkObjectInstance -Depth 10 }
+        }
     }
 }
 
@@ -98,13 +103,13 @@ function ConvertTo-ScimPayload {
         # 
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         [hashtable] $AttributeMapping = @{
-            "externalId"      = "externalId"
-            "name" = @{
+            "externalId" = "externalId"
+            "name"       = @{
                 "familyName" = "familyName"
                 "givenName"  = "givenName"
             }
-            "active"          = "active"
-            "userName"        = "userName"
+            "active"     = "active"
+            "userName"   = "userName"
         },
         # PassThru Object
         [Parameter(Mandatory = $false)]
@@ -140,36 +145,74 @@ function ConvertTo-ScimPayload {
     }
 }
 
-## ToDo: Add function for updating schema on Azure AD app based on sample input.
-#Updated portion to work on batches
-Import-Csv -Path ".\sampledata\csv-with-1000-records.csv" |Select-Object -First 10| Create-Batch 50 |ForEach-Object {
-    $body= $_ |ForEach-Object {
-        $_ # do something with each item in the batch of 50
-     } |ConvertTo-ScimBulkPayload -AttributeMapping @{
-         externalId = 'WorkerID'
-         name = @{
-             familyName = 'LastName'
-             givenName  = 'FirstName'
-         }
-         active     = { $_.'WorkerStatus' -eq 'Active' } # This does not work today, need way to transform source data to core user schema.
-         userName   = 'UserID'
-     }
- ## ToDo: Post requests directly to the API endpoint: Accept Provisioning Job ID/API endpoint as input, authenticate using Graph API and send the SCIM payloads directly to the API endpoint. This logic should be added to a new function that allows pipeline input.
- #Invoke-RestMethod -Method Post '/bulk' -ContentType 'application/scim+json' -Body $ScimB$bodyulkPayload
-     $BatchNr++
- }
- 
- 
- # Import-Csv ".\sampledata\csv-with-1000-records.csv" | Select-Object -First 10 | ConvertTo-ScimBulkPayload -AttributeMapping @{
- #     externalId = 'WorkerID'
- #     name = @{
- #         familyName = 'LastName'
- #         givenName  = 'FirstName'
- #     }
- #     active     = { $_.'WorkerStatus' -eq 'Active' } # This does not work today, need way to transform source data to core user schema.
- #     userName   = 'UserID'
- # }
- 
+<#
+.SYNOPSIS
+    Send SCIM Bulk Payloads to Azure AD
+.EXAMPLE
+    PS C:\>
+
+#>
+function Invoke-AzureADBulkScimRequest {
+    [CmdletBinding()]
+    param (
+        # Json
+        [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+        [string[]] $Body,
+        # 
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+        [string] $ServicePrincipalId
+    )
+
+    begin {
+        ## Import Mg Modules
+        Import-Module Microsoft.Graph.Applications -ErrorAction Stop
+
+        ## Connect to MgGraph Module
+        Connect-MgGraph -Scopes 'Directory.ReadWrite.All' -ErrorAction Stop
+        Select-MgProfile -Name beta
+
+        ## Lookup Service Principal
+        $SyncJob = Get-MgServicePrincipalSynchronizationJob -ServicePrincipalId $ServicePrincipalId
+    }
+    
+    process {
+        foreach ($_body in $Body) {
+            Invoke-MgGraphRequest -Method POST -Uri "https://graph.microsoft.com/beta/servicePrincipals/$ServicePrincipalId/synchronization/jobs/$($SyncJob.Id)/bulkUpload" -ContentType 'application/scim+json' -Body $_body
+        }
+    }
+
+    end {
+
+    }
+}
+
+#endregion
+
+switch ($PSCmdlet.ParameterSetName) {
+    'GenerateScimPayload' {
+        Import-Csv -Path $Path | ConvertTo-ScimBulkPayload -AttributeMapping $AttributeMapping
+    }
+    'SendScimRequest' {
+        Import-Csv -Path $Path | ConvertTo-ScimBulkPayload -AttributeMapping $AttributeMapping | Invoke-AzureADBulkScimRequest -ServicePrincipalId $ServicePrincipalId
+    }
+    'UpdateScimSchema' {
+        ## Move SchemaCustomization script into function and call here
+    }
+}
+
+exit
+
+## Testing
+Import-Csv -Path ".\sampledata\csv-with-1000-records.csv" | Select-Object -First 51 | ConvertTo-ScimBulkPayload -AttributeMapping @{
+    externalId = 'WorkerID'
+    name = @{
+        familyName = 'LastName'
+        givenName  = 'FirstName'
+    }
+    active     = { $_.'WorkerStatus' -eq 'Active' } # This does not work today, need way to transform source data to core user schema.
+    userName   = 'UserID'
+} -PassThru
+
  ## ToDo: Post requests directly to the API endpoint: Accept Provisioning Job ID/API endpoint as input, authenticate using Graph API and send the SCIM payloads directly to the API endpoint. This logic should be added to a new function that allows pipeline input.
  #Invoke-RestMethod -Method Post '/bulk' -ContentType 'application/scim+json' -Body $ScimB$bodyulkPayload
  

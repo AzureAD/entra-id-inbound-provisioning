@@ -6,7 +6,7 @@ Connect-MgGraph -Scopes 'Directory.ReadWrite.All' -ErrorAction Stop
 Select-MgProfile -Name beta
 
 ## Parameters
-$servicePrincipalId = 'a678ea24-a8dc-4ac6-89f4-96b597c36620'
+$servicePrincipalId = '0056dd01-38be-424f-9016-0e8f1db8ba7f'
 #$namespace = Read-Host "Please provide SCIM namespace URI for your custom attributes"
 $namespace = "urn:ietf:params:scim:schemas:extension:csv:1.0:User"
 $CustomSchema = Import-Csv -Path ".\sampledata\csv-with-1000-records.csv"
