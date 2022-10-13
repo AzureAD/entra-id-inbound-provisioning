@@ -6,6 +6,35 @@
     PS C:\>
 
 #>
+
+function Create-Batch{
+    [CmdletBinding()]
+    param (
+        [UInt64]$Size = [UInt64]::MaxValue,
+        [Parameter(Mandatory=$true, ValueFromPipeline=$true)]$InputObject
+    )
+    begin {
+        $Batch = [Collections.Generic.List[object]]::new() # is faster as [Collections.ObjectModel.Collection[psobject]]
+    }
+    process {
+        if ($Size) {
+            if ($Batch.get_Count() -ge $Size) {
+                ,@($Batch)
+                $Batch = [Collections.Generic.List[object]]::new()
+            }
+            $Batch.Add($_)
+        }
+        else { # if no size is provided, any top array will be unrolled (remove batches)
+            $_
+        }
+    }
+    End {
+        if ($Batch.get_Count()) {
+            ,@($Batch)
+        }
+    }
+    }
+    
 function ConvertTo-ScimBulkPayload {
     [CmdletBinding()]
     param (
@@ -112,20 +141,36 @@ function ConvertTo-ScimPayload {
 }
 
 ## ToDo: Add function for updating schema on Azure AD app based on sample input.
-
-
-## Sample usage
-Import-Csv ".\sampledata\csv-with-1000-records.csv" | Select-Object -First 2 | ConvertTo-ScimBulkPayload -AttributeMapping @{
-    externalId = 'WorkerID'
-    name = @{
-        familyName = 'LastName'
-        givenName  = 'FirstName'
-    }
-    active     = { $_.'WorkerStatus' -eq 'Active' } # This does not work today, need way to transform source data to core user schema.
-    userName   = 'UserID'
-}
-
-## ToDo: Post requests directly to the API endpoint: Accept Provisioning Job ID/API endpoint as input, authenticate using Graph API and send the SCIM payloads directly to the API endpoint. This logic should be added to a new function that allows pipeline input.
-#Invoke-RestMethod -Method Post '/bulk' -ContentType 'application/scim+json' -Body $ScimBulkPayload
-
-## ToDo: Check status and resend data for failed records: After timed delay of 40 minutes, query Provisioning Logs API endpoint for failed records and resend data.
+#Updated portion to work on batches
+Import-Csv -Path ".\sampledata\csv-with-1000-records.csv" |Select-Object -First 10| Create-Batch 50 |ForEach-Object {
+    $body= $_ |ForEach-Object {
+        $_ # do something with each item in the batch of 50
+     } |ConvertTo-ScimBulkPayload -AttributeMapping @{
+         externalId = 'WorkerID'
+         name = @{
+             familyName = 'LastName'
+             givenName  = 'FirstName'
+         }
+         active     = { $_.'WorkerStatus' -eq 'Active' } # This does not work today, need way to transform source data to core user schema.
+         userName   = 'UserID'
+     }
+ ## ToDo: Post requests directly to the API endpoint: Accept Provisioning Job ID/API endpoint as input, authenticate using Graph API and send the SCIM payloads directly to the API endpoint. This logic should be added to a new function that allows pipeline input.
+ #Invoke-RestMethod -Method Post '/bulk' -ContentType 'application/scim+json' -Body $ScimB$bodyulkPayload
+     $BatchNr++
+ }
+ 
+ 
+ # Import-Csv ".\sampledata\csv-with-1000-records.csv" | Select-Object -First 10 | ConvertTo-ScimBulkPayload -AttributeMapping @{
+ #     externalId = 'WorkerID'
+ #     name = @{
+ #         familyName = 'LastName'
+ #         givenName  = 'FirstName'
+ #     }
+ #     active     = { $_.'WorkerStatus' -eq 'Active' } # This does not work today, need way to transform source data to core user schema.
+ #     userName   = 'UserID'
+ # }
+ 
+ ## ToDo: Post requests directly to the API endpoint: Accept Provisioning Job ID/API endpoint as input, authenticate using Graph API and send the SCIM payloads directly to the API endpoint. This logic should be added to a new function that allows pipeline input.
+ #Invoke-RestMethod -Method Post '/bulk' -ContentType 'application/scim+json' -Body $ScimB$bodyulkPayload
+ 
+ ## ToDo: Check status and resend data for failed records: After timed delay of 40 minutes, query Provisioning Logs API endpoint for failed records and resend data.
