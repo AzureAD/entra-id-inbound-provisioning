@@ -180,6 +180,29 @@ function ConvertTo-ScimPayload {
         [switch] $PassThru
     )
 
+    begin {
+        function Invoke-Transformation {
+            param (
+                # Input Object
+                [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+                [object] $InputObject,
+                # Transformation Script Block
+                [Parameter(Mandatory = $true)]
+                [scriptblock] $ScriptBlock
+            )
+    
+            process {
+                ## Using Import-PowerShellDataFile to load a scriptblock wraps it in another scriptblock
+                $ScriptBlockResult = $ScriptBlock
+                while ($ScriptBlockResult -is [scriptblock]) {
+                    $ScriptBlockResult = ForEach-Object -InputObject $InputObject -Process $ScriptBlockResult
+                }
+
+                return $ScriptBlockResult
+            }
+        }
+    }
+
     process {
         foreach ($obj in $InputObject) {
             $ScimObject = [PSCustomObject][ordered]@{
@@ -194,7 +217,7 @@ function ConvertTo-ScimPayload {
                     familyName = $obj.($AttributeMapping["name"]["familyName"])
                     givenName  = $obj.($AttributeMapping["name"]["givenName"])
                 }
-                active                                                = $obj.($AttributeMapping["active"])
+                active                                                = Invoke-Transformation $obj $AttributeMapping["active"]
                 userName                                              = $obj.($AttributeMapping["userName"])
                 "$ScimSchemaNamespace" = $obj
             }
@@ -202,7 +225,6 @@ function ConvertTo-ScimPayload {
             ## ToDo: Dynamically add additional core attributes to output object based on AttributeMapping.
             # Write warning when AttributeMapping variable contains attribute not part of core schema. https://www.rfc-editor.org/rfc/rfc7643.html#section-3.1
             # Need way to handle nested attribute components such as name with components of familyName and givenName.
-            # Support transformations such as active -eq "Inactive" to $false bool.
 
             ## Return Object with SCIM Data Structure
             if ($PassThru) { $ScimObject }

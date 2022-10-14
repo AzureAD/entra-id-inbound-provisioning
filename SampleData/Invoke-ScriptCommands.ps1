@@ -7,7 +7,7 @@
 #     -UpdateSchema
 # exit
 
-## Test Generation
+# ## Test Generation
 # .'.\src\Push-CsvToAzureADProvisioning.ps1' `
 #     -Path '.\SampleData\csv-with-1000-records.csv' `
 #     -AttributeMapping @{
@@ -16,16 +16,16 @@
 #             familyName = 'LastName'
 #             givenName  = 'FirstName'
 #         }
-#         active     = { $_.'WorkerStatus' -eq 'Active' } # This does not work today, need way to transform source data to core user schema.
+#         active     = { $_.'WorkerStatus' -eq 'Active' }
 #         userName   = 'UserID'
 #     }
 # exit
 
 ## Test Generation and Send Request to Azure AD
-$AttributeMappings = Import-PowerShellDataFile '.\SampleData\AttributeMappings.psd1'
+$AttributeMapping = Import-PowerShellDataFile '.\SampleData\AttributeMapping.psd1'
 .'.\src\Push-CsvToAzureADProvisioning.ps1' `
     -Path '.\SampleData\csv-with-1000-records.csv' `
     -TenantId 'saziatestaad.onmicrosoft.com' `
     -ServicePrincipalId '995aed29-05e3-4f1a-883e-f17b023d5c81' `
-    -AttributeMapping $AttributeMappings
+    -AttributeMapping $AttributeMapping
 exit
