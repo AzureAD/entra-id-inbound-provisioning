@@ -389,7 +389,7 @@ switch ($PSCmdlet.ParameterSetName) {
     }
 }
 
-## ToDo: Update synopsis and examples
+## ToDo: Update synopsis, examples, and parameter descriptions
 ## ToDo: Add example with AttributeMappings from .psd1 file
 
 ## ToDo: Check status and resend data for failed records: After timed delay of 40 minutes, query Provisioning Logs API endpoint for failed records and resend data.
