@@ -389,11 +389,11 @@ switch ($PSCmdlet.ParameterSetName) {
     }
 }
 
- ## ToDo: Check status and resend data for failed records: After timed delay of 40 minutes, query Provisioning Logs API endpoint for failed records and resend data.
- #https://graph.microsoft.com/beta/auditLogs/provisioning/?$filter=jobid eq 'API2AAD.ded4600b620e486eb6f18b4fc7166a5f.30242ce7-13d1-4d46-9cf1-a4fe5dcee2da'
+## ToDo: Update synopsis and examples
+## ToDo: Add example with AttributeMappings from .psd1 file
 
- ## ToDo: New mode to create scheduled task with correct parameters for easy setup on Windows Server.
+## ToDo: Check status and resend data for failed records: After timed delay of 40 minutes, query Provisioning Logs API endpoint for failed records and resend data.
 
- ## ToDo: Support service principal authentication
+## ToDo: New mode to create scheduled task with correct parameters for easy setup on Windows Server.
 
-## ToDo: Accept AttributeMappings from .psd1 file
+## ToDo: Accept AttributeMappings from .psd1 file on Scim generation commands?
