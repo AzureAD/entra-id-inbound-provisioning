@@ -219,6 +219,18 @@ function ConvertTo-ScimPayload {
                 }
                 active                                                = Invoke-Transformation $obj $AttributeMapping["active"]
                 userName                                              = $obj.($AttributeMapping["userName"])
+				displayName                                           = $obj.($AttributeMapping["displayName"])
+				"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User" = @{
+					employeeNumber = $obj.($AttributeMapping["urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"]["employeeNumber"])
+					costCenter = $obj.($AttributeMapping["urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"]["costCenter"])
+					organization = $obj.($AttributeMapping["urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"]["organization"])
+					division = $obj.($AttributeMapping["urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"]["division"])
+					department = $obj.($AttributeMapping["urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"]["department"])
+					"manager" = @{
+						value = $obj.($AttributeMapping["urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"]["manager"]["value"])
+					}
+				}
+				
                 "$ScimSchemaNamespace" = $obj
             }
 
