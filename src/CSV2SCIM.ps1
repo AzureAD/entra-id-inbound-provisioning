@@ -52,7 +52,7 @@ param (
     [switch] $UpdateSchema
 )
 
-#region Helper Functions
+#region Referenced Functions
 
 <#
 .SYNOPSIS
@@ -540,7 +540,7 @@ switch ($PSCmdlet.ParameterSetName) {
     'GenerateScimPayload' {
         if (Test-ScimAttributeMapping $AttributeMapping -ScimSchemaNamespace 'urn:ietf:params:scim:schemas:core:2.0:User') {
             if ($OnlyIncludeMappedAttributes) { $ScimSchemaNamespace = '' }
-            Import-Csv -Path $Path | select -First 2 | ConvertTo-ScimBulkPayload -ScimSchemaNamespace $ScimSchemaNamespace -AttributeMapping $AttributeMapping
+            Import-Csv -Path $Path | ConvertTo-ScimBulkPayload -ScimSchemaNamespace $ScimSchemaNamespace -AttributeMapping $AttributeMapping
         }
     }
     'SendScimRequest' {
