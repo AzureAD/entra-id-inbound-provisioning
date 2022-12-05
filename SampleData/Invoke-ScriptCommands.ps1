@@ -1,5 +1,5 @@
 # ## Test Update Schema
-# .'.\src\Push-CsvToAzureADProvisioning.ps1' `
+# .'.\src\CSV2SCIM.ps1' `
 #     -Path '.\SampleData\csv-with-1000-records.csv' `
 #     -TenantId 'saziatestaad.onmicrosoft.com' `
 #     -ServicePrincipalId '995aed29-05e3-4f1a-883e-f17b023d5c81' `
@@ -7,23 +7,17 @@
 #     -UpdateSchema
 # exit
 
-# ## Test Generation
-# .'.\src\Push-CsvToAzureADProvisioning.ps1' `
-#     -Path '.\SampleData\csv-with-1000-records.csv' `
-#     -AttributeMapping @{
-#         externalId = 'WorkerID'
-#         name       = @{
-#             familyName = 'LastName'
-#             givenName  = 'FirstName'
-#         }
-#         active     = { $_.'WorkerStatus' -eq 'Active' }
-#         userName   = 'UserID'
-#     }
-# exit
+## Test Generation
+$AttributeMapping = Import-PowerShellDataFile '.\SampleData\AttributeMapping.psd1'
+$data = .'.\src\CSV2SCIM.ps1' `
+    -Path '.\SampleData\csv-with-1000-records.csv' `
+    -AttributeMapping $AttributeMapping
+$data
+exit
 
 ## Test Generation and Send Request to Azure AD
 $AttributeMapping = Import-PowerShellDataFile '.\SampleData\AttributeMapping.psd1'
-.'.\src\Push-CsvToAzureADProvisioning.ps1' `
+.'.\src\CSV2SCIM.ps1' `
     -Path '.\SampleData\csv-with-1000-records.csv' `
     -TenantId 'saziatestaad.onmicrosoft.com' `
     -ServicePrincipalId '995aed29-05e3-4f1a-883e-f17b023d5c81' `
