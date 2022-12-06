@@ -2,20 +2,26 @@
 .SYNOPSIS
     Generate and send user data to Azure AD Provisioning.
 .EXAMPLE
-    PS > $AttributeMapping = Import-PowerShellDataFile '.\SampleData\AttributeMapping.psd1'
-    PS > CSV2SCIM.ps1 -Path '.\SampleData\csv-with-1000-records.csv'
+    PS > $AttributeMapping = Import-PowerShellDataFile '.\Samples\AttributeMapping.psd1'
+    PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -AttributeMapping $AttributeMapping
 
     Generate a SCIM bulk request payload from CSV file.
 
 .EXAMPLE
-    PS > CSV2SCIM.ps1 -Path '.\SampleData\csv-with-1000-records.csv' -ServicePrincipalId 00000000-0000-0000-0000-000000000000
+    PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -ServicePrincipalId 00000000-0000-0000-0000-000000000000
 
     Generate a SCIM bulk request payload from CSV file and send SCIM bulk request to Azure AD.
     
 .EXAMPLE
-    PS > CSV2SCIM.ps1 -Path '.\SampleData\csv-with-1000-records.csv' -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -UpdateSchema
+    PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -UpdateSchema
 
     Update schema on Azure AD provisioning application based on CSV file.
+
+.EXAMPLE
+    PS > $AttributeMapping = Import-PowerShellDataFile '.\Samples\AttributeMapping.psd1'
+    PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -AttributeMapping $AttributeMapping -ValidateAttributeMapping
+
+    Validate Attribute Mapping Against SCIM Schema.   
 #>
 [CmdletBinding(DefaultParameterSetName = 'GenerateScimPayload')]
 param (
@@ -85,6 +91,8 @@ function Test-ScimAttributeMapping {
 
     ## Initialize
     $result = $true
+
+    ## ToDo: Add logic to handle multivalued complex subattributes
 
     foreach ($_PropertyMapping in $AttributeMapping.GetEnumerator()) {
 
