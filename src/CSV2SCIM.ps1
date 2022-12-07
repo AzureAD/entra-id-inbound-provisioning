@@ -35,11 +35,11 @@ param (
     # Path to CSV file
     [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
     [string] $Path,
-    # Map all input properties to specified custom SCIM namespace
+    # Map all input properties to specified custom SCIM namespace. For example: "urn:ietf:params:scim:schemas:extension:csv:1.0:User"
     [Parameter(Mandatory = $false, ParameterSetName = 'GenerateScimPayload')]
     [Parameter(Mandatory = $false, ParameterSetName = 'SendScimRequest')]
     [Parameter(Mandatory = $true, ParameterSetName = 'UpdateScimSchema')]
-    [string] $ScimSchemaNamespace = "urn:ietf:params:scim:schemas:extension:csv:1.0:User",
+    [string] $ScimSchemaNamespace,
     # Map input properties to SCIM attributes
     [Parameter(Mandatory = $true, ParameterSetName = 'ValidateAttributeMapping')]
     [Parameter(Mandatory = $false, ParameterSetName = 'GenerateScimPayload')]
@@ -178,7 +178,6 @@ function ConvertTo-ScimBulkPayload {
     process {
         foreach ($obj in $InputObject) {
 
-            #ToDo: Request batching: If the CSV file has more than 50 lines, create multiple SCIM bulk requests with batch size of 50 records in each request. Start new bulk object when max OperationsPerRequest is reached.
             $ScimOperationObject = [PSCustomObject][ordered]@{
                 "method" = "POST"
                 "bulkId" = [string](New-Guid)
@@ -224,12 +223,8 @@ function ConvertTo-ScimPayload {
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         [hashtable] $AttributeMapping = @{
             "externalId" = "externalId"
-            "name"       = @{
-                "familyName" = "familyName"
-                "givenName"  = "givenName"
-            }
-            "active"     = "active"
             "userName"   = "userName"
+            "active"     = "active"
         },
         # PassThru Object
         [Parameter(Mandatory = $false)]
