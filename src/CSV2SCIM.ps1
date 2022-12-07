@@ -35,7 +35,7 @@ param (
     # Path to CSV file
     [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
     [string] $Path,
-    # SCIM schema extension namespace for mapping all input properties
+    # Map all input properties to specified custom SCIM namespace
     [Parameter(Mandatory = $false, ParameterSetName = 'GenerateScimPayload')]
     [Parameter(Mandatory = $false, ParameterSetName = 'SendScimRequest')]
     [Parameter(Mandatory = $true, ParameterSetName = 'UpdateScimSchema')]
@@ -45,9 +45,6 @@ param (
     [Parameter(Mandatory = $false, ParameterSetName = 'GenerateScimPayload')]
     [Parameter(Mandatory = $false, ParameterSetName = 'SendScimRequest')]
     [hashtable] $AttributeMapping,
-    # # Do not automatically map all input parameters to a SCIM schema extension namespace
-    # [Parameter(Mandatory = $false)]
-    # [switch] $OnlyIncludeMappedAttributes,
     # Tenant Id containing the provisioning application
     [Parameter(Mandatory = $true, ParameterSetName = 'SendScimRequest')]
     [Parameter(Mandatory = $true, ParameterSetName = 'UpdateScimSchema')]
@@ -395,8 +392,6 @@ function Invoke-AzureADBulkScimRequest {
     process {
         foreach ($_body in $Body) {
             Invoke-MgGraphRequest -Method POST -Uri "https://graph.microsoft.com/beta/servicePrincipals/$ServicePrincipalId/synchronization/jobs/$($SyncJob.Id)/bulkUpload" -ContentType 'application/scim+json' -Body $_body
-            ## Use backend hostname until published behind graph.
-            #Invoke-RestMethod -Method POST -Uri "https://na.h1.upload.syncfabric.windowsazure.com/servicePrincipals/$ServicePrincipalId/synchronization/jobs/$($SyncJob.Id)/bulkUpload" -Headers @{ Authorization = $MsalToken.CreateAuthorizationHeader() } -ContentType 'application/scim+json' -Body $_body -SkipCertificateCheck | Out-Null
         }
     }
 
@@ -444,6 +439,8 @@ function Set-AzureADProvisioningAppSchema {
         }
 
         ## Lookup Service Principal
+        $ServicePrincipalId = Get-MgServicePrincipal -Filter "id eq '$ServicePrincipalId' or appId eq '$ServicePrincipalId'" -Select id | Select-Object -ExpandProperty id
+        #$ServicePrincipal = Get-MgServicePrincipal -ServicePrincipalId $ServicePrincipalId -ErrorAction Stop
         $SyncJob = Get-MgServicePrincipalSynchronizationJob -ServicePrincipalId $ServicePrincipalId
         # Get the current Schema of the application
         $SyncJobSchema = Get-MgServicePrincipalSynchronizationJobSchema -ServicePrincipalId $servicePrincipalId -SynchronizationJobId $SyncJob.Id
@@ -522,16 +519,12 @@ else {
     $paramConnectMgGraph['Scope'] = 'Directory.ReadWrite.All'
 }
 
-## MSAL.PS only needed until published to graph. REMOVE
-#Import-Module MSAL.PS -ErrorAction Stop
-
 switch ($PSCmdlet.ParameterSetName) {
     'ValidateAttributeMapping' {
         Test-ScimAttributeMapping $AttributeMapping -ScimSchemaNamespace 'urn:ietf:params:scim:schemas:core:2.0:User'
     }
     'GenerateScimPayload' {
         if (Test-ScimAttributeMapping $AttributeMapping -ScimSchemaNamespace 'urn:ietf:params:scim:schemas:core:2.0:User') {
-            #if ($OnlyIncludeMappedAttributes) { $ScimSchemaNamespace = '' }
             Import-Csv -Path $Path | ConvertTo-ScimBulkPayload -ScimSchemaNamespace $ScimSchemaNamespace -AttributeMapping $AttributeMapping
         }
     }
@@ -539,9 +532,6 @@ switch ($PSCmdlet.ParameterSetName) {
         if (Test-ScimAttributeMapping $AttributeMapping -ScimSchemaNamespace 'urn:ietf:params:scim:schemas:core:2.0:User') {
             Import-Module Microsoft.Graph.Applications -ErrorAction Stop
             Connect-MgGraph @paramConnectMgGraph -ErrorAction Stop
-            ## MSAL.PS only needed until published to graph. REMOVE
-            #$MsalToken = Get-MsalToken -ClientId '14d82eec-204b-4c2f-b7e8-296a70dab67e' -TenantId $TenantId -Scopes 'Directory.ReadWrite.All' -LoginHint (Get-MgContext).Account
-            #if ($OnlyIncludeMappedAttributes) { $ScimSchemaNamespace = '' }
             Import-Csv -Path $Path | ConvertTo-ScimBulkPayload -ScimSchemaNamespace $ScimSchemaNamespace -AttributeMapping $AttributeMapping | Invoke-AzureADBulkScimRequest -ServicePrincipalId $ServicePrincipalId -ErrorAction Stop
         }
     }
@@ -556,3 +546,4 @@ switch ($PSCmdlet.ParameterSetName) {
 ## ToDo: Check status and resend data for failed records: After timed delay of 40 minutes, query Provisioning Logs API endpoint for failed records and resend data.
 ## ToDo: New mode to create scheduled task with correct parameters for easy setup on Windows Server. Also, option to create new self-signed cert and confidential client app reg?
 ## ToDo: Accept AttributeMappings from .psd1 file on Scim generation commands?
+## ToDo: Use Managed Identities?
