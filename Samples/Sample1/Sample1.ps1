@@ -4,6 +4,7 @@ $EmployeeAttributeMapping = Import-PowerShellDataFile '.\Samples\Sample1\Attribu
 $ContractorAttributeMapping = Import-PowerShellDataFile '.\Samples\Sample1\AttributeMapping.Contractor.psd1'
 $InternAttributeMapping = Import-PowerShellDataFile '.\Samples\Sample1\AttributeMapping.Intern.psd1'
 
+
 ### Test SCIM Bulk Payload Generation
 ## Generate SCIM Bulk Payloads for Employee Data Using Employee Attribute Mapping Definition
 .\src\CSV2SCIM.ps1 -Path '.\Samples\Sample1\employeeData.csv' -AttributeMapping $EmployeeAttributeMapping
@@ -13,6 +14,7 @@ $InternAttributeMapping = Import-PowerShellDataFile '.\Samples\Sample1\Attribute
 
 ## Generate SCIM Bulk Payloads for Intern Data Using Intern Attribute Mapping Definition
 .\src\CSV2SCIM.ps1 -Path '.\Samples\Sample1\internData.csv' -AttributeMapping $InternAttributeMapping
+
 
 ### Send Requests to Azure AD
 ## Generate SCIM Bulk Payloads for Employee Data Using Employee Attribute Mapping Definition and Send Requests to Azure AD
