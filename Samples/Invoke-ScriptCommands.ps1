@@ -7,27 +7,37 @@
 #     -UpdateSchema
 # exit
 
-## Validate Attribute Mapping
-$AttributeMapping = Import-PowerShellDataFile '.\Samples\AttributeMapping.psd1'
-.'.\src\CSV2SCIM.ps1' `
-    -Path '.\Samples\csv-with-1000-records.csv' `
-    -AttributeMapping $AttributeMapping `
-    -ValidateAttributeMapping
-exit
+# ## Validate Attribute Mapping
+# $AttributeMapping = Import-PowerShellDataFile '.\Samples\AttributeMapping.psd1'
+# .'.\src\CSV2SCIM.ps1' `
+#     -Path '.\Samples\csv-with-1000-records.csv' `
+#     -AttributeMapping $AttributeMapping `
+#     -ValidateAttributeMapping
+# exit
 
-## Test Generation
-$AttributeMapping = Import-PowerShellDataFile '.\Samples\AttributeMapping.psd1'
-$data = .'.\src\CSV2SCIM.ps1' `
-    -Path '.\Samples\csv-with-1000-records.csv' `
-    -AttributeMapping $AttributeMapping
-$data
-exit
+# ## Test Generation
+# $AttributeMapping = Import-PowerShellDataFile '.\Samples\AttributeMapping.psd1'
+# $data = .'.\src\CSV2SCIM.ps1' `
+#     -Path '.\Samples\csv-with-1000-records.csv' `
+#     -AttributeMapping $AttributeMapping
+# $data
+# exit
 
 ## Test Generation and Send Request to Azure AD
 $AttributeMapping = Import-PowerShellDataFile '.\Samples\AttributeMapping.psd1'
 .'.\src\CSV2SCIM.ps1' `
     -Path '.\Samples\csv-with-1000-records.csv' `
     -TenantId 'saziatestaad.onmicrosoft.com' `
-    -ServicePrincipalId '995aed29-05e3-4f1a-883e-f17b023d5c81' `
-    -AttributeMapping $AttributeMapping
+    -ServicePrincipalId '30242ce7-13d1-4d46-9cf1-a4fe5dcee2da' `
+    -AttributeMapping $AttributeMapping `
+    -Verbose
+exit
+
+## Test Minimums
+.'.\src\CSV2SCIM.ps1' `
+    -Path '.\Samples\csv-with-2-records.csv' `
+    -TenantId 'saziatestaad.onmicrosoft.com' `
+    -ServicePrincipalId '30242ce7-13d1-4d46-9cf1-a4fe5dcee2da' `
+    -AttributeMapping @{ externalId = 'WorkerID' } `
+    -Verbose
 exit
