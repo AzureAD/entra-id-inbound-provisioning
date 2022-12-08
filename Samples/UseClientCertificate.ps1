@@ -1,13 +1,12 @@
 
 ## Create Self-Signed Certificate on the Device where client app will authenticate
 $ClientCertificate = New-SelfSignedCertificate -Subject 'CN=CSV2SCIM' -KeyExportPolicy 'NonExportable' -CertStoreLocation Cert:\CurrentUser\My
-
-## ToDo: Remove private key from certificate before uploading.
+$ClientCertificate
 
 ## Replace certificates on application registration with newly created certificate
-$App = Get-MgApplication -ApplicationId '9341c084-4208-400d-a2bf-89689e658a38' -Property id, displayName, keyCredentials
-Update-MgApplication -ApplicationId '9341c084-4208-400d-a2bf-89689e658a38' -KeyCredentials @{
+# Insert the objectId of your application registration where the public certificate should be uploaded.
+Update-MgApplication -ApplicationId '00000000-0000-0000-0000-000000000000' -KeyCredentials @{
     Type = "AsymmetricX509Cert"
     Usage = "Verify"
-    Key = $ClientCertificate.GetRawCertData()
+    Key = $ClientCertificate.RawData
 }
