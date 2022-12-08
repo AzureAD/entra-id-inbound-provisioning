@@ -45,6 +45,7 @@ param (
     [Parameter(Mandatory = $false, ParameterSetName = 'GenerateScimPayload')]
     [Parameter(Mandatory = $false, ParameterSetName = 'SendScimRequest')]
     [Parameter(Mandatory = $true, ParameterSetName = 'UpdateScimSchema')]
+    [ValidatePattern('urn:.*')]
     [string] $ScimSchemaNamespace,
     # Map input properties to SCIM attributes
     [Parameter(Mandatory = $true, ParameterSetName = 'ValidateAttributeMapping')]
