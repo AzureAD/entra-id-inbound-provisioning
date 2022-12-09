@@ -549,3 +549,4 @@ switch ($PSCmdlet.ParameterSetName) {
 ## ToDo: New mode to create scheduled task with correct parameters for easy setup on Windows Server. Also, option to create new self-signed cert and confidential client app reg?
 ## ToDo: Accept AttributeMappings from .psd1 file on Scim generation commands?
 ## ToDo: Use Managed Identities?
+## ToDo: Run in two passes? First, ensure the user exists. Second, rerun with reference attributes.
