@@ -15,13 +15,13 @@
 
 .EXAMPLE
     PS > $AttributeMapping = Import-PowerShellDataFile '.\Samples\AttributeMapping.psd1'
-    PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -AttributeMapping $AttributeMapping -ServicePrincipalId 00000000-0000-0000-0000-000000000000
+    PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -AttributeMapping $AttributeMapping -ServicePrincipalId 0000000-0000-0000-0000-000000000 -TenantId 
 
     Generate a SCIM bulk request payload from CSV file and send SCIM bulk request to Azure AD.
     
 .EXAMPLE
     PS > $AttributeMapping = Import-PowerShellDataFile '.\Samples\AttributeMapping.psd1'
-    PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -AttributeMapping $AttributeMapping -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -ClientId 00000000-0000-0000-0000-000000000000 -ClientCertificate (Get-ChildItem Cert:\CurrentUser\My\0000000000000000000000000000000000000000) `
+    PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -AttributeMapping $AttributeMapping -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -ClientId 00000000-0000-0000-0000-000000000000 -ClientCertificate (Get-ChildItem Cert:\CurrentUser\My\0000000000000000000000000000000000000000) -TenantId 0000000-0000-0000-0000-000000000
 
     Generate a SCIM bulk request payload from CSV file and send SCIM bulk request to Azure AD using service principal with certificate authentication.
 
@@ -39,7 +39,7 @@
 [CmdletBinding(DefaultParameterSetName = 'GenerateScimPayload')]
 param (
     # Path to CSV file
-    [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $false, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
     [string] $Path,
     # Map all input properties to specified custom SCIM namespace. For example: "urn:ietf:params:scim:schemas:extension:csv:1.0:User"
     [Parameter(Mandatory = $false, ParameterSetName = 'GenerateScimPayload')]
@@ -55,10 +55,12 @@ param (
     # Tenant Id containing the provisioning application
     [Parameter(Mandatory = $true, ParameterSetName = 'SendScimRequest')]
     [Parameter(Mandatory = $true, ParameterSetName = 'UpdateScimSchema')]
+    [Parameter(Mandatory = $true, ParameterSetName = 'LastSyncStatisticsDetails')]
     [string] $TenantId,
     # Service Principal Id for the provisioning application
     [Parameter(Mandatory = $true, ParameterSetName = 'SendScimRequest')]
     [Parameter(Mandatory = $true, ParameterSetName = 'UpdateScimSchema')]
+    [Parameter(Mandatory = $true, ParameterSetName = 'LastSyncStatisticsDetails')]
     [string] $ServicePrincipalId,
     # Id of client application used to authenticate to tenant and MS Graph
     [Parameter(Mandatory = $false, ParameterSetName = 'SendScimRequest')]
@@ -73,7 +75,9 @@ param (
     [switch] $UpdateSchema,
     # Validate Attribute Mapping structure matches standard SCIM namespaces
     [Parameter(Mandatory = $true, ParameterSetName = 'ValidateAttributeMapping')]
-    [switch] $ValidateAttributeMapping
+    [switch] $ValidateAttributeMapping,
+    [Parameter(Mandatory = $true, ParameterSetName = 'LastSyncStatisticsDetails')]
+    [switch] $LastSyncStatisticsDetails
 )
 
 #region Script Variables and Functions
@@ -389,11 +393,15 @@ function Invoke-AzureADBulkScimRequest {
         $ServicePrincipalId = Get-MgServicePrincipal -Filter "id eq '$ServicePrincipalId' or appId eq '$ServicePrincipalId'" -Select id | Select-Object -ExpandProperty id
         #$ServicePrincipal = Get-MgServicePrincipal -ServicePrincipalId $ServicePrincipalId -ErrorAction Stop
         $SyncJob = Get-MgServicePrincipalSynchronizationJob -ServicePrincipalId $ServicePrincipalId -ErrorAction Stop
+       
     }
     
     process {
+       
+            
         foreach ($_body in $Body) {
-            Invoke-MgGraphRequest -Method POST -Uri "https://graph.microsoft.com/beta/servicePrincipals/$ServicePrincipalId/synchronization/jobs/$($SyncJob.Id)/bulkUpload" -ContentType 'application/scim+json' -Body $_body
+            Invoke-MgGraphRequest -Method POST -Uri "https://graph.microsoft.com/beta/servicePrincipals/$ServicePrincipalId/synchronization/jobs/$($SyncJob.Id)/bulkUpload" -ContentType 'application/scim+json' -Body $_body 
+         
         }
     }
 
@@ -409,7 +417,7 @@ function Invoke-AzureADBulkScimRequest {
 .SYNOPSIS
     Update schema of Azure AD Provisioning app
 #>
-function Set-AzureADProvisioningAppSchema {
+ function Set-AzureADProvisioningAppSchema {
     [CmdletBinding()]
     param (
         # Resource Data
@@ -518,7 +526,7 @@ elseif ($ClientId) {
     $paramConnectMgGraph['Scope'] = 'Directory.ReadWrite.All'
 }
 else {
-    $paramConnectMgGraph['Scope'] = 'Directory.ReadWrite.All'
+    $paramConnectMgGraph['Scope'] = 'Directory.ReadWrite.All,AuditLog.Read.All'
 }
 
 switch ($PSCmdlet.ParameterSetName) {
@@ -534,7 +542,10 @@ switch ($PSCmdlet.ParameterSetName) {
         if (Test-ScimAttributeMapping $AttributeMapping -ScimSchemaNamespace 'urn:ietf:params:scim:schemas:core:2.0:User') {
             Import-Module Microsoft.Graph.Applications -ErrorAction Stop
             Connect-MgGraph @paramConnectMgGraph -ErrorAction Stop
+            $date=Get-Date -Format "yyyy-MM-ddTHH:mm:ssZ"
+            $records=(Import-csv -Path $Path).count
             Import-Csv -Path $Path | ConvertTo-ScimBulkPayload -ScimSchemaNamespace $ScimSchemaNamespace -AttributeMapping $AttributeMapping | Invoke-AzureADBulkScimRequest -ServicePrincipalId $ServicePrincipalId -ErrorAction Stop
+            $date + "|" + $records > "LastRunCycle.txt"
         }
     }
     'UpdateScimSchema' {
@@ -542,8 +553,29 @@ switch ($PSCmdlet.ParameterSetName) {
         Connect-MgGraph @paramConnectMgGraph -ErrorAction Stop
         Get-Content -Path $Path -First 1 | Set-AzureADProvisioningAppSchema -ScimSchemaNamespace $ScimSchemaNamespace -TenantId $TenantId -ServicePrincipalId $ServicePrincipalId
     }
-}
+    
+    'LastSyncStatisticsDetails' {
+      #ToDO: Make this portion a function to get the Sync ID
+        Import-Module Microsoft.Graph.Applications -ErrorAction Stop
+        Connect-MgGraph @paramConnectMgGraph -ErrorAction Stop
+        $previousProfile = Get-MgProfile
+        if ($previousProfile.Name -ne 'beta') {
+            Select-MgProfile -Name 'beta'
+        }
+        $ServicePrincipalId = Get-MgServicePrincipal -Filter "id eq '$ServicePrincipalId' or appId eq '$ServicePrincipalId'" -Select id | Select-Object -ExpandProperty id
+        $LastSync=Get-Content -Path ".\LastRunCycle.txt" -First 1 
+        $SyncJob = Get-MgServicePrincipalSynchronizationJob -ServicePrincipalId $ServicePrincipalId -ErrorAction Stop
+        $out=Invoke-MgGraphRequest -Uri "https://graph.microsoft.com/beta/auditLogs/provisioning/?`$filter=jobid eq '$($SyncJob.Id)' and activityDateTime ge $($LastSync.Split('|')[0])"
+        Write-host "$($LastSync.Split('|')[1]) sent users on the last cycle"
+        $out.value | select-object @{Name="ID";Expression= {$_.targetidentity["id"] }},@{Name="DisplayName";Expression= {$_.targetidentity["displayName"] }},@{Name="Action";Expression={$_.action}},@{Name="Stauts";Expression={$_.statusInfo["status"]}},@{Name="DateTime";Expression={$_.activitydateTime}} |Sort-Object -Property {$_.activitydateTime} -Descending | group-object -Property Action,Status | select NAme,Count | Format-Table    
+        if ((Read-host "Do you want to see the deatails of the last export run?").Trim().ToLower() -eq "y")
+        {
+             $out.value | select-object @{Name="ID";Expression= {$_.targetidentity["id"] }},@{Name="DisplayName";Expression= {$_.targetidentity["displayName"] }},@{Name="Action";Expression={$_.action}},@{Name="Stauts";Expression={$_.statusInfo["status"]}},@{Name="DateTime";Expression={$_.activitydateTime}} |Sort-Object -Property {$_.activitydateTime} -Descending | sort-Object -Property ID -Unique | Format-Table
+        }
+    
 
+}
+}
 ### Possible Enhancements:
 ## ToDo: Check status and resend data for failed records: After timed delay of 40 minutes, query Provisioning Logs API endpoint for failed records and resend data.
 ## ToDo: New mode to create scheduled task with correct parameters for easy setup on Windows Server. Also, option to create new self-signed cert and confidential client app reg?
