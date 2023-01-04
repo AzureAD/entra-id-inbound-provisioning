@@ -567,11 +567,12 @@ switch ($PSCmdlet.ParameterSetName) {
         $SyncJob = Get-MgServicePrincipalSynchronizationJob -ServicePrincipalId $ServicePrincipalId -ErrorAction Stop
         $out=Invoke-MgGraphRequest -Uri "https://graph.microsoft.com/beta/auditLogs/provisioning/?`$filter=jobid eq '$($SyncJob.Id)' and activityDateTime ge $($LastSync.Split('|')[0])"
         Write-host "$($LastSync.Split('|')[1]) sent users on the last cycle"
-        $out.value | select-object @{Name="ID";Expression= {$_.targetidentity["id"] }},@{Name="DisplayName";Expression= {$_.targetidentity["displayName"] }},@{Name="Action";Expression={$_.action}},@{Name="Stauts";Expression={$_.statusInfo["status"]}},@{Name="DateTime";Expression={$_.activitydateTime}} |Sort-Object -Property {$_.activitydateTime} -Descending | group-object -Property Action,Status | select NAme,Count | Format-Table    
+        $out.value | select-object @{Name="ID";Expression= {$_.targetidentity["id"] }},@{Name="DisplayName";Expression= {$_.targetidentity["displayName"] }},@{Name="Action";Expression={$_.action}},@{Name="Stauts";Expression={$_.statusInfo["status"]}},@{Name="DateTime";Expression={$_.activitydateTime}} |Sort-Object -Property {$_.activitydateTime} -Descending  | group-object -Property Action,Status | select NAme,Count | Format-Table    
         if ((Read-host "Do you want to see the deatails of the last export run?").Trim().ToLower() -eq "y")
         {
-             $out.value | select-object @{Name="ID";Expression= {$_.targetidentity["id"] }},@{Name="DisplayName";Expression= {$_.targetidentity["displayName"] }},@{Name="Action";Expression={$_.action}},@{Name="Stauts";Expression={$_.statusInfo["status"]}},@{Name="DateTime";Expression={$_.activitydateTime}} |Sort-Object -Property {$_.activitydateTime} -Descending | sort-Object -Property ID -Unique | Format-Table
-        }
+             #$out.value | select-object @{Name="ID";Expression= {$_.targetidentity["id"] }},@{Name="DisplayName";Expression= {$_.targetidentity["displayName"] }},@{Name="Action";Expression={$_.action}},@{Name="Stauts";Expression={$_.statusInfo["status"]}},@{Name="DateTime";Expression={$_.activitydateTime}} |Sort-Object -Property {$_.activitydateTime} -Descending | sort-Object -Property ID -Unique | Format-Table
+              $out.value | select-object @{Name="ID";Expression= {$_.targetidentity["id"] }},@{Name="DisplayName";Expression= {$_.targetidentity["displayName"] }},@{Name="Action";Expression={$_.action}},@{Name="Stauts";Expression={$_.statusInfo["status"]}},@{Name="DateTime";Expression={$_.activitydateTime}} |Sort-Object -Property {$_.activitydateTime} -Descending  | Format-Table
+            }
     
 
 }
