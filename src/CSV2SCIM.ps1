@@ -105,6 +105,7 @@ function Test-ScimAttributeMapping {
     ## Initialize
     $result = $true
 
+    ## ToDo: Add Warning for schemas that could not be validated
     ## ToDo: Add logic to handle multivalued complex subattributes
 
     foreach ($_PropertyMapping in $AttributeMapping.GetEnumerator()) {
