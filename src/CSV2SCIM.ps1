@@ -92,6 +92,167 @@ $script:ScimSchemas = @{
 .SYNOPSIS
     Validate Attribute Mapping Against SCIM Schema
 #>  
+
+# function GetLastCycles{
+#     [CmdletBinding()]
+#     param (
+#         # Map input properties to SCIM attributes
+#         [Parameter(Mandatory = $true)]
+#         [int] $CyclesNumber
+  
+#     )
+#     $SyncCylce = [PSCustomObject][ordered]@{
+#         "ChangeId"      = $null
+#         "ID"   = $null
+#         "PrimaryOperation" = $null
+#         "DisplayNAme"= $null
+#         "ProvisioningLogs"=New-Object System.Collections.Generic.List[pscustomobject]
+#         "ActivityDateTime"=$null
+#     }
+
+#     Import-Module Microsoft.Graph.Applications -ErrorAction Stop
+#     Connect-MgGraph @paramConnectMgGraph -ErrorAction Stop
+#     $previousProfile = Get-MgProfile
+#     if ($previousProfile.Name -ne 'beta') {
+#         Select-MgProfile -Name 'beta'
+#     }
+#     $ServicePrincipalId = Get-MgServicePrincipal -Filter "id eq '$ServicePrincipalId' or appId eq '$ServicePrincipalId'" -Select id | Select-Object -ExpandProperty id
+#     $SyncJob = Get-MgServicePrincipalSynchronizationJob -ServicePrincipalId $ServicePrincipalId -ErrorAction Stop
+#     $FirstCycleRecord=Get-MgAuditLogProvisioning -Filter "jobid eq '$($SyncJob.Id)'" -Top 1 -ErrorAction Stop
+   
+#     If ($null -eq $FirstCycleRecord){break;}
+#     $LastCycle=Get-MgAuditLogProvisioning -Filter "cycleId eq '$($FirstCycleRecord.cycleId)'"  | Group-Object -Property ChangeId
+#     $Changes=@()
+#     foreach ($log in $LastCycle) 
+#     {
+#         $objectInstance=$SyncCylce.psobject.copy()
+#         $objectInstance.ChangeId= $log.Group[0].ChangeId
+#         $objectInstance.ID=$log.Group[0].Id
+#         $objectInstance.DisplayNAme=$log.Group[0].targetIdentity.displayName
+#         $objectInstance.ProvisioningLogs=$log.group
+#         if ($log.Group.count -ge 2) {$index=1} else {$index=0}
+#         $objectInstance.PrimaryOperation=$log.Group[$index].Action
+#         $objectInstance.ActivityDateTime=$log.Group[$index].activitydateTime
+#         $changes+=$objectInstance
+#     }
+
+
+#    # $out=Invoke-MgGraphRequest -Uri "https://graph.microsoft.com/beta/auditLogs/provisioning/?`$filter=jobid eq '$(Y)' and activityDateTime ge $($LastSync.Split('|')[0])"
+#     #Write-host "$($LastSync.Split('|')[1]) sent users on the last cycle"
+#     #$out.value | select-object @{Name="ID";Expression= {$_.targetidentity["id"] }},@{Name="DisplayName";Expression= {$_.targetidentity["displayName"] }},@{Name="Action";Expression={$_.action}},@{Name="Stauts";Expression={$_.statusInfo["status"]}},@{Name="DateTime";Expression={$_.activitydateTime}} |Sort-Object -Property {$_.activitydateTime} -Descending  | group-object -Property Action,Status | select NAme,Count | Format-Table    
+#     #if ((Read-host "Do you want to see the deatails of the last export run?").Trim().ToLower() -eq "y")
+#     #{
+#          #$out.value | select-object @{Name="ID";Expression= {$_.targetidentity["id"] }},@{Name="DisplayName";Expression= {$_.targetidentity["displayName"] }},@{Name="Action";Expression={$_.action}},@{Name="Stauts";Expression={$_.statusInfo["status"]}},@{Name="DateTime";Expression={$_.activitydateTime}} |Sort-Object -Property {$_.activitydateTime} -Descending | sort-Object -Property ID -Unique | Format-Table
+#          # $out.value | select-object @{Name="ID";Expression= {$_.targetidentity["id"] }},@{Name="DisplayName";Expression= {$_.targetidentity["displayName"] }},@{Name="Action";Expression={$_.action}},@{Name="Stauts";Expression={$_.statusInfo["status"]}},@{Name="DateTime";Expression={$_.activitydateTime}} |Sort-Object -Property {$_.activitydateTime} -Descending  | Format-Table
+#      #   }
+
+#      return $changes
+# }
+
+function ConvertCycles {
+    [CmdletBinding()]
+    param (
+      
+        [Parameter(Mandatory = $false,ValueFromPipeline)]
+        [string[]] $CycleId
+  
+    )
+    begin
+    {
+        $processedUsers=0
+        $UpdatedUsers=0
+        $CreatedUsers=0
+        $Errors=0
+
+
+    }
+  process
+   {
+    If ($null -eq $FirstCycleRecord) { break; }
+    $LastCycle = Get-MgAuditLogProvisioning -Filter "cycleId eq '$($_)'"  | Group-Object -Property ChangeId
+   
+    foreach ($log in $LastCycle) {
+        if ($log.Group.count -ge 2) { $index = 1 } else { $index = 0 }
+        $SyncCylce = [PSCustomObject][ordered]@{
+            "ChangeId"         = $log.Group[0].ChangeId
+            "CycleId"         = $log.Group[0].cycleId
+            "ID"               = $log.Group[0].Id
+            "PrimaryAction"    = $log.Group[$index].Action
+            "DisplayNAme"      = $log.Group[0].targetIdentity.displayName
+            "ProvisioningLogs" = $log.group
+            "ActivityDateTime" = $log.Group[$index].ActivityDateTime
+            "Status"            = $log.Group[$index].Statusinfo.Status
+          
+        }
+        $processedUsers++
+        If ($log.Group[$index].Action -eq "Create" -and $log.Group[$index].Statusinfo.Status -eq "success")
+            {
+                $CreatedUsers++
+
+            }
+
+            If ($log.Group[$index].Action -eq "Update" -and $log.Group[$index].Statusinfo.Status -eq "success")
+            {
+                $UpdatedUsers++
+                
+            }
+
+            If ($log.Group[$index].Statusinfo.Status -eq "Failed")
+            {
+                $Errors++
+                
+            }
+        
+        
+        $SyncCylce
+        
+    }
+   }
+   end 
+   {
+                
+                write-host "Processed Users $processedUsers | Created Users  $CreatedUsers | Updated Users $UpdatedUsers | Errors $Errors"
+
+   }
+}
+
+function Get-CycleIDs
+{
+    [CmdletBinding()]
+    param (
+      
+        [Parameter(Mandatory = $true)]
+        [int] $CyclesNumber
+  
+    )
+
+    $ServicePrincipalId = Get-MgServicePrincipal -Filter "id eq '$ServicePrincipalId' or appId eq '$ServicePrincipalId'" -Select id | Select-Object -ExpandProperty id
+    $SyncJob = Get-MgServicePrincipalSynchronizationJob -ServicePrincipalId $ServicePrincipalId -ErrorAction Stop
+    $cylceIDs=@()
+    for ($i = 0; $i -lt $CyclesNumber; $i++) 
+    {
+     if ($i -ne 0)
+     {
+         $qryStatement+=" and cycleId ne '$($cylceIDs[$i-1])'"
+     }
+     else
+     {
+         $qryStatement= "jobid eq '$($SyncJob.Id)'"
+     }
+     $CId=Get-MgAuditLogProvisioning -Filter $qryStatement -Top 1 -ErrorAction Stop
+     if ($null -ne $CId -and $null -ne $CID.CycleId)
+     {   
+         $cylceIDs+=$CID.CycleId
+     }
+    
+    }
+  
+     return $cylceIDs
+
+}
+
+
+
 function Test-ScimAttributeMapping {
     [CmdletBinding()]
     param (
@@ -556,24 +717,16 @@ switch ($PSCmdlet.ParameterSetName) {
     
     'LastSyncStatisticsDetails' {
       #ToDO: Make this portion a function to get the Sync ID
-        Import-Module Microsoft.Graph.Applications -ErrorAction Stop
-        Connect-MgGraph @paramConnectMgGraph -ErrorAction Stop
-        $previousProfile = Get-MgProfile
-        if ($previousProfile.Name -ne 'beta') {
-            Select-MgProfile -Name 'beta'
-        }
-        $ServicePrincipalId = Get-MgServicePrincipal -Filter "id eq '$ServicePrincipalId' or appId eq '$ServicePrincipalId'" -Select id | Select-Object -ExpandProperty id
-        $LastSync=Get-Content -Path ".\LastRunCycle.txt" -First 1 
-        $SyncJob = Get-MgServicePrincipalSynchronizationJob -ServicePrincipalId $ServicePrincipalId -ErrorAction Stop
-        $out=Invoke-MgGraphRequest -Uri "https://graph.microsoft.com/beta/auditLogs/provisioning/?`$filter=jobid eq '$($SyncJob.Id)' and activityDateTime ge $($LastSync.Split('|')[0])"
-        Write-host "$($LastSync.Split('|')[1]) sent users on the last cycle"
-        $out.value | select-object @{Name="ID";Expression= {$_.targetidentity["id"] }},@{Name="DisplayName";Expression= {$_.targetidentity["displayName"] }},@{Name="Action";Expression={$_.action}},@{Name="Stauts";Expression={$_.statusInfo["status"]}},@{Name="DateTime";Expression={$_.activitydateTime}} |Sort-Object -Property {$_.activitydateTime} -Descending  | group-object -Property Action,Status | select NAme,Count | Format-Table    
-        if ((Read-host "Do you want to see the deatails of the last export run?").Trim().ToLower() -eq "y")
-        {
-             #$out.value | select-object @{Name="ID";Expression= {$_.targetidentity["id"] }},@{Name="DisplayName";Expression= {$_.targetidentity["displayName"] }},@{Name="Action";Expression={$_.action}},@{Name="Stauts";Expression={$_.statusInfo["status"]}},@{Name="DateTime";Expression={$_.activitydateTime}} |Sort-Object -Property {$_.activitydateTime} -Descending | sort-Object -Property ID -Unique | Format-Table
-              $out.value | select-object @{Name="ID";Expression= {$_.targetidentity["id"] }},@{Name="DisplayName";Expression= {$_.targetidentity["displayName"] }},@{Name="Action";Expression={$_.action}},@{Name="Stauts";Expression={$_.statusInfo["status"]}},@{Name="DateTime";Expression={$_.activitydateTime}} |Sort-Object -Property {$_.activitydateTime} -Descending  | Format-Table
-            }
-    
+      Import-Module Microsoft.Graph.Applications -ErrorAction Stop
+      Connect-MgGraph @paramConnectMgGraph -ErrorAction Stop
+      $previousProfile = Get-MgProfile
+      if ($previousProfile.Name -ne 'beta') {
+          Select-MgProfile -Name 'beta'
+      }
+       $cylces=Read-Host "Hoy many Sync Cycles do you want to get?"
+       Get-CycleIDs -CyclesNumber $cylces | ConvertCycles 
+ 
+   
 
 }
 }
