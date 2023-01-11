@@ -77,7 +77,9 @@ param (
     [Parameter(Mandatory = $true, ParameterSetName = 'ValidateAttributeMapping')]
     [switch] $ValidateAttributeMapping,
     [Parameter(Mandatory = $true, ParameterSetName = 'LastSyncStatisticsDetails')]
-    [switch] $LastSyncStatisticsDetails
+    [switch] $LastSyncStatisticsDetails,
+    [Parameter(Mandatory = $true, ParameterSetName = 'LastSyncStatisticsDetails')]
+    [int] $NumberOfCycles
 )
 
 #region Script Variables and Functions
@@ -211,7 +213,7 @@ function ConvertCycles {
    end 
    {
                 
-                write-host "Processed Users $processedUsers | Created Users  $CreatedUsers | Updated Users $UpdatedUsers | Errors $Errors"
+               # write-host "Processed Users $processedUsers | Created Users  $CreatedUsers | Updated Users $UpdatedUsers | Errors $Errors"
 
    }
 }
@@ -723,10 +725,17 @@ switch ($PSCmdlet.ParameterSetName) {
       if ($previousProfile.Name -ne 'beta') {
           Select-MgProfile -Name 'beta'
       }
-       $cylces=Read-Host "Hoy many Sync Cycles do you want to get?"
-       Get-CycleIDs -CyclesNumber $cylces | ConvertCycles 
- 
-   
+       #$cylces=Read-Host "Hoy many Sync Cycles do you want to get?"
+       
+       $LastCycles=Get-CycleIDs -CyclesNumber $NumberOfCycles | ConvertCycles 
+       $processedUsers=$LastCycles.count
+       $UpdatedUsers=($LastCycles | Where-Object {$_.PrimaryAction -eq "Update" -and $_.Status -eq "success"}).count
+       $CreatedUsers=($LastCycles | Where-Object {$_.PrimaryAction -eq "Create" -and $_.Status -eq "success"}).count
+       $Errors=($LastCycles | Where-Object {$_.Status -ne "success"}).count
+
+       write-host "Processed Users $processedUsers | Created Users  $CreatedUsers | Updated Users $UpdatedUsers | Errors $Errors"
+
+       return $LastCycles
 
 }
 }
