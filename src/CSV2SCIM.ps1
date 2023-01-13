@@ -766,10 +766,7 @@ switch ($PSCmdlet.ParameterSetName) {
         if (Test-ScimAttributeMapping $AttributeMapping -ScimSchemaNamespace 'urn:ietf:params:scim:schemas:core:2.0:User') {
             Import-Module Microsoft.Graph.Applications -ErrorAction Stop
             Connect-MgGraph @paramConnectMgGraph -ErrorAction Stop | Out-Null
-            $date = Get-Date -Format "yyyy-MM-ddTHH:mm:ssZ"
-            $records = (Import-Csv -Path $Path).count
             Import-Csv -Path $Path | ConvertTo-ScimBulkPayload -ScimSchemaNamespace $ScimSchemaNamespace -AttributeMapping $AttributeMapping | Invoke-AzureADBulkScimRequest -ServicePrincipalId $ServicePrincipalId -ErrorAction Stop
-            $date + "|" + $records > "LastRunCycle.txt"
         }
     }
     'UpdateScimSchema' {
