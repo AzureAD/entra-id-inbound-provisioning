@@ -15,18 +15,18 @@
 
 .EXAMPLE
     PS > $AttributeMapping = Import-PowerShellDataFile '.\Samples\AttributeMapping.psd1'
-    PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -AttributeMapping $AttributeMapping -ServicePrincipalId 00000000-0000-0000-0000-000000000000
+    PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -AttributeMapping $AttributeMapping -TenantId 00000000-0000-0000-0000-000000000000 -ServicePrincipalId 00000000-0000-0000-0000-000000000000
 
     Generate a SCIM bulk request payload from CSV file and send SCIM bulk request to Azure AD.
     
 .EXAMPLE
     PS > $AttributeMapping = Import-PowerShellDataFile '.\Samples\AttributeMapping.psd1'
-    PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -AttributeMapping $AttributeMapping -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -ClientId 00000000-0000-0000-0000-000000000000 -ClientCertificate (Get-ChildItem Cert:\CurrentUser\My\0000000000000000000000000000000000000000) `
+    PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -AttributeMapping $AttributeMapping -TenantId 00000000-0000-0000-0000-000000000000 -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -ClientId 00000000-0000-0000-0000-000000000000 -ClientCertificate (Get-ChildItem Cert:\CurrentUser\My\0000000000000000000000000000000000000000)
 
     Generate a SCIM bulk request payload from CSV file and send SCIM bulk request to Azure AD using service principal with certificate authentication.
 
 .EXAMPLE
-    PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -ScimSchemaNamespace 'urn:ietf:params:scim:schemas:extension:csv:1.0:User' -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -UpdateSchema
+    PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -ScimSchemaNamespace 'urn:ietf:params:scim:schemas:extension:csv:1.0:User' -TenantId 00000000-0000-0000-0000-000000000000 -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -UpdateSchema
 
     Update schema on Azure AD provisioning application with schema extension 'urn:ietf:params:scim:schemas:extension:csv:1.0:User' based on CSV file.
 
@@ -39,7 +39,11 @@
 [CmdletBinding(DefaultParameterSetName = 'GenerateScimPayload')]
 param (
     # Path to CSV file
-    [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'GenerateScimPayload')]
+    [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'SendScimRequest')]
+    [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'UpdateScimSchema')]
+    [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'ValidateAttributeMapping')]
+    [Parameter(Mandatory = $false, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'GetPreviousCycleLogs')]
     [string] $Path,
     # Map all input properties to specified custom SCIM namespace. For example: "urn:ietf:params:scim:schemas:extension:csv:1.0:User"
     [Parameter(Mandatory = $false, ParameterSetName = 'GenerateScimPayload')]
@@ -55,10 +59,12 @@ param (
     # Tenant Id containing the provisioning application
     [Parameter(Mandatory = $true, ParameterSetName = 'SendScimRequest')]
     [Parameter(Mandatory = $true, ParameterSetName = 'UpdateScimSchema')]
+    [Parameter(Mandatory = $true, ParameterSetName = 'GetPreviousCycleLogs')]
     [string] $TenantId,
     # Service Principal Id for the provisioning application
     [Parameter(Mandatory = $true, ParameterSetName = 'SendScimRequest')]
     [Parameter(Mandatory = $true, ParameterSetName = 'UpdateScimSchema')]
+    [Parameter(Mandatory = $true, ParameterSetName = 'GetPreviousCycleLogs')]
     [string] $ServicePrincipalId,
     # Id of client application used to authenticate to tenant and MS Graph
     [Parameter(Mandatory = $false, ParameterSetName = 'SendScimRequest')]
@@ -73,7 +79,11 @@ param (
     [switch] $UpdateSchema,
     # Validate Attribute Mapping structure matches standard SCIM namespaces
     [Parameter(Mandatory = $true, ParameterSetName = 'ValidateAttributeMapping')]
-    [switch] $ValidateAttributeMapping
+    [switch] $ValidateAttributeMapping,
+    [Parameter(Mandatory = $true, ParameterSetName = 'GetPreviousCycleLogs')]
+    [switch] $GetPreviousCycleLogs,
+    [Parameter(Mandatory = $false, ParameterSetName = 'GetPreviousCycleLogs')]
+    [int] $NumberOfCycles = 1
 )
 
 #region Script Variables and Functions
@@ -87,7 +97,7 @@ $script:ScimSchemas = @{
 <#
 .SYNOPSIS
     Validate Attribute Mapping Against SCIM Schema
-#>  
+#>
 function Test-ScimAttributeMapping {
     [CmdletBinding()]
     param (
@@ -110,7 +120,7 @@ function Test-ScimAttributeMapping {
 
     foreach ($_PropertyMapping in $AttributeMapping.GetEnumerator()) {
 
-        if ($_PropertyMapping.Key -in 'id','externalId') { continue }
+        if ($_PropertyMapping.Key -in 'id', 'externalId') { continue }
 
         [string[]] $NewHierarchyPath = $HierarchyPath + $_PropertyMapping.Key
 
@@ -150,7 +160,7 @@ function Test-ScimAttributeMapping {
 <#
 .SYNOPSIS
     Convert Object(s) to SCIM Bulk Payload Format
-#>   
+#>
 function ConvertTo-ScimBulkPayload {
     [CmdletBinding()]
     param (
@@ -390,11 +400,13 @@ function Invoke-AzureADBulkScimRequest {
         $ServicePrincipalId = Get-MgServicePrincipal -Filter "id eq '$ServicePrincipalId' or appId eq '$ServicePrincipalId'" -Select id | Select-Object -ExpandProperty id
         #$ServicePrincipal = Get-MgServicePrincipal -ServicePrincipalId $ServicePrincipalId -ErrorAction Stop
         $SyncJob = Get-MgServicePrincipalSynchronizationJob -ServicePrincipalId $ServicePrincipalId -ErrorAction Stop
+       
     }
     
     process {
         foreach ($_body in $Body) {
-            Invoke-MgGraphRequest -Method POST -Uri "https://graph.microsoft.com/beta/servicePrincipals/$ServicePrincipalId/synchronization/jobs/$($SyncJob.Id)/bulkUpload" -ContentType 'application/scim+json' -Body $_body
+            Invoke-MgGraphRequest -Method POST -Uri "https://graph.microsoft.com/beta/servicePrincipals/$ServicePrincipalId/synchronization/jobs/$($SyncJob.Id)/bulkUpload" -ContentType 'application/scim+json' -Body $_body 
+         
         }
     }
 
@@ -503,6 +515,234 @@ function Set-AzureADProvisioningAppSchema {
     }
 }
 
+<#
+.SYNOPSIS
+    Get Provisioning CycleId History
+#>
+function Get-ProvisioningCycleIdHistory {
+    [CmdletBinding()]
+    param (
+        # Service Principal Id of the provisioning application
+        [Parameter(Mandatory = $true)]
+        [string] $ServicePrincipalId,
+        # Number of CycleIds to return
+        [Parameter(Mandatory = $true)]
+        [int] $NumberOfCycles
+    )
+
+    begin {
+        $previousProfile = Get-MgProfile
+        if ($previousProfile.Name -ne 'beta') {
+            Select-MgProfile -Name 'beta'
+        }
+
+        $ServicePrincipalId = Get-MgServicePrincipal -Filter "id eq '$ServicePrincipalId' or appId eq '$ServicePrincipalId'" -Select id | Select-Object -ExpandProperty id
+        $SyncJob = Get-MgServicePrincipalSynchronizationJob -ServicePrincipalId $ServicePrincipalId -ErrorAction Stop
+        [string[]] $cylceIDs = @()
+    }
+
+    process {
+        $qryStatement = "jobid eq '$($SyncJob.Id)'"
+        for ($i = 0; $i -lt $NumberOfCycles; $i++) {
+            if ($cylceIDs.Count -gt 0) {
+                $qryStatement += " and cycleId ne '$($cylceIDs[-1])'"
+            }
+            $CycleLogEntry = Get-MgAuditLogProvisioning -Filter $qryStatement -Top 1
+            if ($null -ne $CycleLogEntry -and $null -ne $CycleLogEntry.CycleId) {
+                $CycleLogEntry.CycleId
+                $cylceIDs += $CycleLogEntry.CycleId
+            }
+            else { break }
+        }
+    }
+
+    end {
+        if ($previousProfile.Name -ne (Get-MgProfile).Name) {
+            Select-MgProfile -Name $previousProfile.Name
+        }
+    }
+}
+
+<#
+.SYNOPSIS
+    Get Provisioning Logs by CycleId
+#>
+function Get-ProvisioningCycleLogs {
+    [CmdletBinding()]
+    param (
+        # 
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+        [string[]] $CycleId,
+        # 
+        [Parameter(Mandatory = $false)]
+        [switch] $SummarizeByChangeId,
+        # 
+        [Parameter(Mandatory = $false)]
+        [switch] $ShowCycleStatistics
+    )
+
+    process {
+        foreach ($_cycleId in $CycleId) {
+
+            if ($GroupByChangeId) {
+                ## Output Logs Summarized by ChangeId
+                $CycleLogs = Get-MgAuditLogProvisioning -Filter "cycleId eq '$_cycleId'" -All
+                $CycleLogsByChangeId = $CycleLogs | Group-Object -Property ChangeId
+
+                foreach ($log in $CycleLogsByChangeId) {
+                    # ToDo: Set Status to failure if any of the logs has failure status
+                    [PSCustomObject][ordered]@{
+                        "CycleId"          = $log.Group[-1].CycleId
+                        "ChangeId"         = $log.Group[-1].ChangeId
+                        "SourceId"         = $log.Group[-1].SourceIdentity.Id
+                        "TargetId"         = $log.Group[-1].TargetIdentity.Id
+                        "DisplayName"      = $log.Group[-1].TargetIdentity.DisplayName
+                        "PrimaryAction"    = $log.Group[-1].Action
+                        "Status"           = $log.Group[-1].StatusInfo.Status
+                        "ActivityDateTime" = $log.Group[-1].ActivityDateTime
+                        "ProvisioningLogs" = $log.Group
+                    }
+                }
+            }
+            else {
+                ## Output Logs Directly
+                Get-MgAuditLogProvisioning -Filter "cycleId eq '$_cycleId'" -All -OutVariable CycleLogs
+                $CycleLogsByChangeId = $CycleLogs | Group-Object -Property ChangeId -NoElement
+            }
+
+            if ($ShowCycleStatistics) {
+                Get-ProvisioningLogStatistics $CycleLogs -WriteToConsole | Out-Null
+            }
+        }
+    }
+}
+
+<#
+.SYNOPSIS
+    Get Statistics for Set of Provisioning Logs
+#>
+function Get-ProvisioningLogStatistics {
+    [CmdletBinding()]
+    param (
+        # Provisioning Logs
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+        [object[]] $ProvisioningLogs,
+        # Summarize Logs by CycleId
+        [Parameter(Mandatory = $false)]
+        [switch] $SummarizeByCycleId,
+        # Write Summary to Host Console in addition to Standard Output
+        [Parameter(Mandatory = $false)]
+        [switch] $WriteToConsole
+    )
+
+    begin {
+        function New-CycleSummary ($CycleId) {
+            return [pscustomobject][ordered]@{
+                CycleId          = $CycleId
+                StartDateTime    = $null
+                EndDateTime      = $null
+                Changes          = 0
+                Users            = 0
+                ActionStatistics = @(
+                    New-ActionStatusStatistics 'Create'
+                    New-ActionStatusStatistics 'Update'
+                    New-ActionStatusStatistics 'Delete'
+                    New-ActionStatusStatistics 'Disable'
+                    New-ActionStatusStatistics 'StagedDelete'
+                    New-ActionStatusStatistics 'Other'
+                )
+            }
+        }
+
+        function New-ActionStatusStatistics ($Action) {
+            return [PSCustomObject][ordered]@{
+                Action  = $Action
+                Success = 0
+                Failure = 0
+                Skipped = 0
+                Warning = 0
+            }
+        }
+
+        $CycleSummary = New-CycleSummary
+        $CycleSummary.CycleId = New-Object 'System.Collections.Generic.List[string]'
+        $CycleTracker = @{
+            ChangeIds = New-Object 'System.Collections.Generic.HashSet[string]'
+            UserIds   = New-Object 'System.Collections.Generic.HashSet[string]'
+        }
+
+        $CycleSummaries = [ordered]@{}
+        $CycleTrackers = @{}
+    }
+
+    process {
+        foreach ($ProvisioningLog in $ProvisioningLogs) {
+            if ($SummarizeByCycleId) {
+                if (!$CycleSummaries.Contains($ProvisioningLog.CycleId)) {
+                    ## New CycleSummary object for new CycleId
+                    $CycleSummaries[$ProvisioningLog.CycleId] = $CycleSummary = New-CycleSummary $ProvisioningLog.CycleId
+                    $CycleTrackers[$ProvisioningLog.CycleId] = $CycleTracker = @{
+                        ChangeIds = New-Object 'System.Collections.Generic.HashSet[string]'
+                        UserIds   = New-Object 'System.Collections.Generic.HashSet[string]'
+                    }
+                }
+                else {
+                    $CycleSummary = $CycleSummaries[$ProvisioningLog.CycleId]
+                    $CycleTracker = $CycleTrackers[$ProvisioningLog.CycleId]
+                }
+            }
+            else {
+                ## Add CycleId to a single summary object
+                if (!$CycleSummary.CycleId.Contains($ProvisioningLog.CycleId)) { $CycleSummary.CycleId.Add($ProvisioningLog.CycleId) }
+            }
+
+            ## Update log date range
+            if ($null -eq $CycleSummary.StartDateTime -or $ProvisioningLog.ActivityDateTime -lt $CycleSummary.StartDateTime) {
+                $CycleSummary.StartDateTime = $ProvisioningLog.ActivityDateTime
+            }
+            if ($null -eq $CycleSummary.EndDateTime -or $ProvisioningLog.ActivityDateTime -gt $CycleSummary.EndDateTime) {
+                $CycleSummary.EndDateTime = $ProvisioningLog.ActivityDateTime
+            }
+
+            ## Update summary object with statistics
+            if ($CycleTracker.ChangeIds.Add($ProvisioningLog.ChangeId)) { $CycleSummary.Changes++ }
+            if ($CycleTracker.UserIds.Add($ProvisioningLog.SourceIdentity.Id)) { $CycleSummary.Users++ }
+
+            $CycleSummary.ActionStatistics | Where-Object Action -EQ $ProvisioningLog.Action | ForEach-Object { $_.($ProvisioningLog.StatusInfo.Status)++ }
+        }
+    }
+
+    end {
+        if ($SummarizeByCycleID) {
+            [array] $CycleSummaries = $CycleSummaries.Values
+        }
+        else {
+            [array] $CycleSummaries = $CycleSummary
+        }
+
+        foreach ($CycleSummary in $CycleSummaries) {
+            Write-Output $CycleSummary
+
+            if ($WriteToConsole) {
+                Write-Host ('')
+                Write-Host ("CycleId: {0}" -f ($CycleSummary.CycleId -join ', '))
+                Write-Host ("Timespan: {0} - {1} ({2})" -f $CycleSummary.StartDateTime, $CycleSummary.EndDateTime, ($CycleSummary.EndDateTime - $CycleSummary.StartDateTime))
+                Write-Host ("Total Changes: {0}" -f $CycleSummary.Changes)
+                Write-Host ("Total Users: {0}" -f $CycleSummary.Users)
+                Write-Host ('')
+
+                $TableRowPattern = '{0,-12} {1,7} {2,7} {3,7} {4,7} {5,7}'
+                Write-Host ($TableRowPattern -f 'Action', 'Success', 'Failure', 'Skipped', 'Warning', 'Total')
+                Write-Host ($TableRowPattern -f '------', '-------', '-------', '-------', '-------', '-----')
+                foreach ($row in $CycleSummary.ActionStatistics) {
+                    Write-Host ($TableRowPattern -f $row.Action, $row.Success, $row.Failure, $row.Skipped, $row.Warning, ($row.Success + $row.Failure + $row.Skipped + $row.Warning))
+                }
+                Write-Host ('')
+            }
+        }
+    }
+}
+
 #endregion
 
 
@@ -519,7 +759,7 @@ elseif ($ClientId) {
     $paramConnectMgGraph['Scope'] = 'Directory.ReadWrite.All'
 }
 else {
-    $paramConnectMgGraph['Scope'] = 'Directory.ReadWrite.All'
+    $paramConnectMgGraph['Scope'] = 'Directory.ReadWrite.All', 'AuditLog.Read.All'
 }
 
 switch ($PSCmdlet.ParameterSetName) {
@@ -534,20 +774,27 @@ switch ($PSCmdlet.ParameterSetName) {
     'SendScimRequest' {
         if (Test-ScimAttributeMapping $AttributeMapping -ScimSchemaNamespace 'urn:ietf:params:scim:schemas:core:2.0:User') {
             Import-Module Microsoft.Graph.Applications -ErrorAction Stop
-            Connect-MgGraph @paramConnectMgGraph -ErrorAction Stop
+            Connect-MgGraph @paramConnectMgGraph -ErrorAction Stop | Out-Null
             Import-Csv -Path $Path | ConvertTo-ScimBulkPayload -ScimSchemaNamespace $ScimSchemaNamespace -AttributeMapping $AttributeMapping | Invoke-AzureADBulkScimRequest -ServicePrincipalId $ServicePrincipalId -ErrorAction Stop
         }
     }
     'UpdateScimSchema' {
         Import-Module Microsoft.Graph.Applications -ErrorAction Stop
-        Connect-MgGraph @paramConnectMgGraph -ErrorAction Stop
+        Connect-MgGraph @paramConnectMgGraph -ErrorAction Stop | Out-Null
         Get-Content -Path $Path -First 1 | Set-AzureADProvisioningAppSchema -ScimSchemaNamespace $ScimSchemaNamespace -TenantId $TenantId -ServicePrincipalId $ServicePrincipalId
+    }
+    
+    'GetPreviousCycleLogs' {
+        Import-Module Microsoft.Graph.Applications -ErrorAction Stop
+        Connect-MgGraph @paramConnectMgGraph -ErrorAction Stop | Out-Null
+       
+        Get-ProvisioningCycleIdHistory $ServicePrincipalId -NumberOfCycles $NumberOfCycles | Get-ProvisioningCycleLogs -ShowCycleStatistics
     }
 }
 
 ### Possible Enhancements:
-## ToDo: Check status and resend data for failed records: After timed delay of 40 minutes, query Provisioning Logs API endpoint for failed records and resend data.
+## ToDo: Check for failed records after 60 minute delay and copy them to new CSV for retry?
 ## ToDo: New mode to create scheduled task with correct parameters for easy setup on Windows Server. Also, option to create new self-signed cert and confidential client app reg?
+## ToDo: Use Client Secret or Managed Identity for authentication? Requires upgrade to MS Graph PowerShell SDK v2. https://devblogs.microsoft.com/microsoft365dev/microsoft-graph-powershell-v2-is-now-in-public-preview-half-the-size-and-will-speed-up-your-automations/
 ## ToDo: Accept AttributeMappings from .psd1 file on Scim generation commands?
-## ToDo: Use Managed Identities?
-## ToDo: Run in two passes? First, ensure the user exists. Second, rerun with reference attributes.
+## ToDo: Run in two passes? First, ensure the user exists. Second, rerun with reference attributes. Not needed? Each cycle already does a second pass?

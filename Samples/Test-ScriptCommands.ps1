@@ -29,12 +29,18 @@
 #     -Verbose
 # exit
 
-## Test Generation and Send Request to Azure AD using Certificate
-$AttributeMapping = Import-PowerShellDataFile '.\Samples\AttributeMapping.psd1'
-.'.\src\CSV2SCIM.ps1' `
-    -Path '.\Samples\csv-with-2-records.csv' `
-    -AttributeMapping $AttributeMapping `
+# ## Test Generation and Send Request to Azure AD using Certificate
+# $AttributeMapping = Import-PowerShellDataFile '.\Samples\AttributeMapping.psd1'
+# .'.\src\CSV2SCIM.ps1' `
+#     -Path '.\Samples\csv-with-2-records.csv' `
+#     -AttributeMapping $AttributeMapping `
+#     -TenantId 'saziatestaad.onmicrosoft.com' -ServicePrincipalId '30242ce7-13d1-4d46-9cf1-a4fe5dcee2da' `
+#     -ClientId '3762674d-470e-41db-9115-9f2914ccded4' -ClientCertificate (Get-ChildItem Cert:\CurrentUser\My\AF1C6C090CB75782711672DE47C55C45E407EC05) `
+#     -Verbose
+# exit
+
+## Get Logs for Last Cycle 
+$test = .'.\src\CSV2SCIM.ps1' `
     -TenantId 'saziatestaad.onmicrosoft.com' -ServicePrincipalId '30242ce7-13d1-4d46-9cf1-a4fe5dcee2da' `
-    -ClientId '3762674d-470e-41db-9115-9f2914ccded4' -ClientCertificate (Get-ChildItem Cert:\CurrentUser\My\AF1C6C090CB75782711672DE47C55C45E407EC05) `
-    -Verbose
+    -GetPreviousCycleLogs -NumberOfCycles 2
 exit
