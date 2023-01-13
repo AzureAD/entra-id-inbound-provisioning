@@ -39,7 +39,11 @@
 [CmdletBinding(DefaultParameterSetName = 'GenerateScimPayload')]
 param (
     # Path to CSV file
-    [Parameter(Mandatory = $false, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'GenerateScimPayload')]
+    [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'SendScimRequest')]
+    [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'UpdateScimSchema')]
+    [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'ValidateAttributeMapping')]
+    [Parameter(Mandatory = $false, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'GetPreviousCycleLogs')]
     [string] $Path,
     # Map all input properties to specified custom SCIM namespace. For example: "urn:ietf:params:scim:schemas:extension:csv:1.0:User"
     [Parameter(Mandatory = $false, ParameterSetName = 'GenerateScimPayload')]
