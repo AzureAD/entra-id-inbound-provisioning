@@ -15,18 +15,18 @@
 
 .EXAMPLE
     PS > $AttributeMapping = Import-PowerShellDataFile '.\Samples\AttributeMapping.psd1'
-    PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -AttributeMapping $AttributeMapping -ServicePrincipalId 0000000-0000-0000-0000-000000000 -TenantId 
+    PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -AttributeMapping $AttributeMapping -TenantId 00000000-0000-0000-0000-000000000000 -ServicePrincipalId 00000000-0000-0000-0000-000000000000
 
     Generate a SCIM bulk request payload from CSV file and send SCIM bulk request to Azure AD.
     
 .EXAMPLE
     PS > $AttributeMapping = Import-PowerShellDataFile '.\Samples\AttributeMapping.psd1'
-    PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -AttributeMapping $AttributeMapping -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -ClientId 00000000-0000-0000-0000-000000000000 -ClientCertificate (Get-ChildItem Cert:\CurrentUser\My\0000000000000000000000000000000000000000) -TenantId 0000000-0000-0000-0000-000000000
+    PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -AttributeMapping $AttributeMapping -TenantId 00000000-0000-0000-0000-000000000000 -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -ClientId 00000000-0000-0000-0000-000000000000 -ClientCertificate (Get-ChildItem Cert:\CurrentUser\My\0000000000000000000000000000000000000000)
 
     Generate a SCIM bulk request payload from CSV file and send SCIM bulk request to Azure AD using service principal with certificate authentication.
 
 .EXAMPLE
-    PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -ScimSchemaNamespace 'urn:ietf:params:scim:schemas:extension:csv:1.0:User' -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -UpdateSchema
+    PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -ScimSchemaNamespace 'urn:ietf:params:scim:schemas:extension:csv:1.0:User' -TenantId 00000000-0000-0000-0000-000000000000 -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -UpdateSchema
 
     Update schema on Azure AD provisioning application with schema extension 'urn:ietf:params:scim:schemas:extension:csv:1.0:User' based on CSV file.
 
