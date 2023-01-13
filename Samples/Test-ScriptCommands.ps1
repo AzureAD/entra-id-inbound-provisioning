@@ -40,8 +40,7 @@
 # exit
 
 ## Get Logs for Last Cycle 
-.'.\src\CSV2SCIM.ps1' `
+$test = .'.\src\CSV2SCIM.ps1' `
     -TenantId 'saziatestaad.onmicrosoft.com' -ServicePrincipalId '30242ce7-13d1-4d46-9cf1-a4fe5dcee2da' `
-    -LastSyncStatisticsDetails `
-    -Verbose
+    -GetPreviousCycleLogs -NumberOfCycles 2
 exit
