@@ -35,7 +35,25 @@
     PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -AttributeMapping $AttributeMapping -ValidateAttributeMapping
 
     Validate Attribute Mapping Against SCIM Schema.   
-#>
+
+.EXAMPLE
+    
+    PS > CSV2SCIM.ps1 -TenantId 00000000-0000-0000-0000-000000000000 -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -GetPreviousCycleLogs -NumberOfCycles 2
+
+    Get provisioning statistics from provisioning logs for the latest 2 number of cycles and show details on the output.   
+
+.EXAMPLE
+    
+    PS > $ProvisioningLogsDetails=CSV2SCIM.ps1 -TenantId 00000000-0000-0000-0000-000000000000 -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -GetPreviousCycleLogs -NumberOfCycles 2
+
+    Get provisioning statistics from provisioning logs for the latest 2 number of cycles and save the details into a variable for futher analysis.
+    #>
+
+  
+
+
+
+
 [CmdletBinding(DefaultParameterSetName = 'GenerateScimPayload')]
 param (
     # Path to CSV file
