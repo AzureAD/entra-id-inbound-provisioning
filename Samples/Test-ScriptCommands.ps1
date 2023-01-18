@@ -1,7 +1,7 @@
 # ## Test Update Schema
 # .'.\src\CSV2SCIM.ps1' `
 #     -Path '.\Samples\csv-with-1000-records.csv' `
-#     -TenantId 'saziatestaad.onmicrosoft.com' -ServicePrincipalId '995aed29-05e3-4f1a-883e-f17b023d5c81' `
+#     -ServicePrincipalId '995aed29-05e3-4f1a-883e-f17b023d5c81' `
 #     -ScimSchemaNamespace 'urn:ietf:params:scim:schemas:extension:csv:1.0:User' -UpdateSchema
 # exit
 
@@ -24,7 +24,7 @@
 # $AttributeMapping = Import-PowerShellDataFile '.\Samples\AttributeMapping.psd1'
 # .'.\src\CSV2SCIM.ps1' `
 #     -Path '.\Samples\csv-with-2-records.csv' `
-#     -TenantId 'saziatestaad.onmicrosoft.com' -ServicePrincipalId '30242ce7-13d1-4d46-9cf1-a4fe5dcee2da' `
+#     -ServicePrincipalId '30242ce7-13d1-4d46-9cf1-a4fe5dcee2da' `
 #     -AttributeMapping $AttributeMapping `
 #     -Verbose
 # exit
@@ -34,13 +34,14 @@
 # .'.\src\CSV2SCIM.ps1' `
 #     -Path '.\Samples\csv-with-2-records.csv' `
 #     -AttributeMapping $AttributeMapping `
-#     -TenantId 'saziatestaad.onmicrosoft.com' -ServicePrincipalId '30242ce7-13d1-4d46-9cf1-a4fe5dcee2da' `
+#     -ServicePrincipalId '30242ce7-13d1-4d46-9cf1-a4fe5dcee2da' `
 #     -ClientId '3762674d-470e-41db-9115-9f2914ccded4' -ClientCertificate (Get-ChildItem Cert:\CurrentUser\My\AF1C6C090CB75782711672DE47C55C45E407EC05) `
 #     -Verbose
 # exit
 
 ## Get Logs for Last Cycle 
-$test = .'.\src\CSV2SCIM.ps1' `
-    -TenantId 'saziatestaad.onmicrosoft.com' -ServicePrincipalId '30242ce7-13d1-4d46-9cf1-a4fe5dcee2da' `
-    -GetPreviousCycleLogs -NumberOfCycles 2
+$Logs = .'.\src\CSV2SCIM.ps1' `
+    -ServicePrincipalId '30242ce7-13d1-4d46-9cf1-a4fe5dcee2da' `
+    -GetPreviousCycleLogs -NumberOfCycles 2 `
+    -Verbose
 exit

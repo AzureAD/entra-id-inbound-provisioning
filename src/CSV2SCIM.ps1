@@ -37,19 +37,16 @@
     Validate Attribute Mapping Against SCIM Schema.   
 
 .EXAMPLE
-    
     PS > CSV2SCIM.ps1 -TenantId 00000000-0000-0000-0000-000000000000 -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -GetPreviousCycleLogs
 
     Get provisioning statistics from provisioning logs for the latest cycle and show log details in the console.
 
 .EXAMPLE
-    
     PS > $ProvisioningLogsDetails = CSV2SCIM.ps1 -TenantId 00000000-0000-0000-0000-000000000000 -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -GetPreviousCycleLogs -NumberOfCycles 2
 
     Get provisioning statistics from provisioning logs for the latest 2 cycles and save the log details to a variable for futher analysis.
-    #>
 
-  
+#>
 [CmdletBinding(DefaultParameterSetName = 'GenerateScimPayload')]
 param (
     # Path to CSV file
@@ -57,7 +54,6 @@ param (
     [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'SendScimRequest')]
     [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'UpdateScimSchema')]
     [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'ValidateAttributeMapping')]
-    [Parameter(Mandatory = $false, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'GetPreviousCycleLogs')]
     [string] $Path,
     # Map all input properties to specified custom SCIM namespace. For example: "urn:ietf:params:scim:schemas:extension:csv:1.0:User"
     [Parameter(Mandatory = $false, ParameterSetName = 'GenerateScimPayload')]
@@ -71,9 +67,9 @@ param (
     [Parameter(Mandatory = $false, ParameterSetName = 'SendScimRequest')]
     [hashtable] $AttributeMapping,
     # Tenant Id containing the provisioning application
-    [Parameter(Mandatory = $true, ParameterSetName = 'SendScimRequest')]
-    [Parameter(Mandatory = $true, ParameterSetName = 'UpdateScimSchema')]
-    [Parameter(Mandatory = $true, ParameterSetName = 'GetPreviousCycleLogs')]
+    [Parameter(Mandatory = $false, ParameterSetName = 'SendScimRequest')]
+    [Parameter(Mandatory = $false, ParameterSetName = 'UpdateScimSchema')]
+    [Parameter(Mandatory = $false, ParameterSetName = 'GetPreviousCycleLogs')]
     [string] $TenantId,
     # Service Principal Id for the provisioning application
     [Parameter(Mandatory = $true, ParameterSetName = 'SendScimRequest')]
@@ -94,8 +90,10 @@ param (
     # Validate Attribute Mapping structure matches standard SCIM namespaces
     [Parameter(Mandatory = $true, ParameterSetName = 'ValidateAttributeMapping')]
     [switch] $ValidateAttributeMapping,
+    # Get provisioning logs and statistics for the previous cycle
     [Parameter(Mandatory = $true, ParameterSetName = 'GetPreviousCycleLogs')]
     [switch] $GetPreviousCycleLogs,
+    # Number of previous cycles to return
     [Parameter(Mandatory = $false, ParameterSetName = 'GetPreviousCycleLogs')]
     [int] $NumberOfCycles = 1
 )
@@ -419,8 +417,7 @@ function Invoke-AzureADBulkScimRequest {
     
     process {
         foreach ($_body in $Body) {
-            Invoke-MgGraphRequest -Method POST -Uri "https://graph.microsoft.com/beta/servicePrincipals/$ServicePrincipalId/synchronization/jobs/$($SyncJob.Id)/bulkUpload" -ContentType 'application/scim+json' -Body $_body 
-         
+            Invoke-MgGraphRequest -Method POST -Uri "https://graph.microsoft.com/beta/servicePrincipals/$ServicePrincipalId/synchronization/jobs/$($SyncJob.Id)/bulkUpload" -ContentType 'application/scim+json' -Body $_body
         }
     }
 
@@ -446,9 +443,6 @@ function Set-AzureADProvisioningAppSchema {
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
         [Alias('Namespace')]
         [string] $ScimSchemaNamespace,
-        # Tenant Id containing the provisioning application
-        [Parameter(Mandatory = $true)]
-        [string] $TenantId,
         # Service Principal Id for the provisioning application
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
         [string] $ServicePrincipalId
@@ -461,7 +455,7 @@ function Set-AzureADProvisioningAppSchema {
         Import-Module Microsoft.Graph.Applications -ErrorAction Stop
 
         ## Connect to MgGraph Module
-        #Connect-MgGraph -Scopes 'Directory.ReadWrite.All' -TenantId $TenantId -ErrorAction Stop
+        #Connect-MgGraph -Scopes 'Directory.ReadWrite.All' -ErrorAction Stop
         $previousProfile = Get-MgProfile
         if ($previousProfile.Name -ne 'beta') {
             Select-MgProfile -Name 'beta'
@@ -760,9 +754,8 @@ function Get-ProvisioningLogStatistics {
 
 
 ## Define Connect Parameters
-$paramConnectMgGraph = @{
-    TenantId = $TenantId
-}
+$paramConnectMgGraph = @{}
+if ($TenantId) { $paramConnectMgGraph['TenantId'] = $TenantId }
 if ($ClientCertificate) {
     $paramConnectMgGraph['ClientId'] = $ClientId
     $paramConnectMgGraph['Certificate'] = $ClientCertificate
@@ -788,13 +781,15 @@ switch ($PSCmdlet.ParameterSetName) {
         if (Test-ScimAttributeMapping $AttributeMapping -ScimSchemaNamespace 'urn:ietf:params:scim:schemas:core:2.0:User') {
             Import-Module Microsoft.Graph.Applications -ErrorAction Stop
             Connect-MgGraph @paramConnectMgGraph -ErrorAction Stop | Out-Null
+
             Import-Csv -Path $Path | ConvertTo-ScimBulkPayload -ScimSchemaNamespace $ScimSchemaNamespace -AttributeMapping $AttributeMapping | Invoke-AzureADBulkScimRequest -ServicePrincipalId $ServicePrincipalId -ErrorAction Stop
         }
     }
     'UpdateScimSchema' {
         Import-Module Microsoft.Graph.Applications -ErrorAction Stop
         Connect-MgGraph @paramConnectMgGraph -ErrorAction Stop | Out-Null
-        Get-Content -Path $Path -First 1 | Set-AzureADProvisioningAppSchema -ScimSchemaNamespace $ScimSchemaNamespace -TenantId $TenantId -ServicePrincipalId $ServicePrincipalId
+
+        Get-Content -Path $Path -First 1 | Set-AzureADProvisioningAppSchema -ScimSchemaNamespace $ScimSchemaNamespace -ServicePrincipalId $ServicePrincipalId
     }
     'GetPreviousCycleLogs' {
         Import-Module Microsoft.Graph.Applications -ErrorAction Stop
