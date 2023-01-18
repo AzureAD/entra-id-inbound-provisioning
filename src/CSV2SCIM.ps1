@@ -38,22 +38,18 @@
 
 .EXAMPLE
     
-    PS > CSV2SCIM.ps1 -TenantId 00000000-0000-0000-0000-000000000000 -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -GetPreviousCycleLogs -NumberOfCycles 2
+    PS > CSV2SCIM.ps1 -TenantId 00000000-0000-0000-0000-000000000000 -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -GetPreviousCycleLogs
 
-    Get provisioning statistics from provisioning logs for the latest 2 number of cycles and show details on the output.   
+    Get provisioning statistics from provisioning logs for the latest cycle and show log details in the console.
 
 .EXAMPLE
     
-    PS > $ProvisioningLogsDetails=CSV2SCIM.ps1 -TenantId 00000000-0000-0000-0000-000000000000 -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -GetPreviousCycleLogs -NumberOfCycles 2
+    PS > $ProvisioningLogsDetails = CSV2SCIM.ps1 -TenantId 00000000-0000-0000-0000-000000000000 -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -GetPreviousCycleLogs -NumberOfCycles 2
 
-    Get provisioning statistics from provisioning logs for the latest 2 number of cycles and save the details into a variable for futher analysis.
+    Get provisioning statistics from provisioning logs for the latest 2 cycles and save the log details to a variable for futher analysis.
     #>
 
   
-
-
-
-
 [CmdletBinding(DefaultParameterSetName = 'GenerateScimPayload')]
 param (
     # Path to CSV file
@@ -588,13 +584,13 @@ function Get-ProvisioningCycleIdHistory {
 function Get-ProvisioningCycleLogs {
     [CmdletBinding()]
     param (
-        # 
+        # Provisioning CycleId
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         [string[]] $CycleId,
-        # 
+        # Summarize Logs by ChangeId
         [Parameter(Mandatory = $false)]
         [switch] $SummarizeByChangeId,
-        # 
+        # Show provisioning statistics for each cycle
         [Parameter(Mandatory = $false)]
         [switch] $ShowCycleStatistics
     )
