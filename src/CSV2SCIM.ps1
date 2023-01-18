@@ -598,22 +598,21 @@ function Get-ProvisioningCycleLogs {
     process {
         foreach ($_cycleId in $CycleId) {
 
-            if ($GroupByChangeId) {
+            if ($SummarizeByChangeId) {
                 ## Output Logs Summarized by ChangeId
                 $CycleLogs = Get-MgAuditLogProvisioning -Filter "cycleId eq '$_cycleId'" -All
                 $CycleLogsByChangeId = $CycleLogs | Group-Object -Property ChangeId
 
                 foreach ($log in $CycleLogsByChangeId) {
-                    # ToDo: Set Status to failure if any of the logs has failure status
                     [PSCustomObject][ordered]@{
-                        "CycleId"          = $log.Group[-1].CycleId
-                        "ChangeId"         = $log.Group[-1].ChangeId
-                        "SourceId"         = $log.Group[-1].SourceIdentity.Id
-                        "TargetId"         = $log.Group[-1].TargetIdentity.Id
-                        "DisplayName"      = $log.Group[-1].TargetIdentity.DisplayName
-                        "PrimaryAction"    = $log.Group[-1].Action
-                        "Status"           = $log.Group[-1].StatusInfo.Status
-                        "ActivityDateTime" = $log.Group[-1].ActivityDateTime
+                        "ChangeId"         = $log.Group[0].ChangeId
+                        "SourceId"         = $log.Group[0].SourceIdentity.Id
+                        "TargetId"         = $log.Group[0].TargetIdentity.Id
+                        "DisplayName"      = $log.Group[0].TargetIdentity.DisplayName
+                        "Action"           = $log.Group.Action
+                        "Status"           = $log.Group.StatusInfo.Status
+                        "ActivityDateTime" = $log.Group[0].ActivityDateTime
+                        "CycleId"          = $log.Group[0].CycleId
                         "ProvisioningLogs" = $log.Group
                     }
                 }
@@ -797,12 +796,11 @@ switch ($PSCmdlet.ParameterSetName) {
         Connect-MgGraph @paramConnectMgGraph -ErrorAction Stop | Out-Null
         Get-Content -Path $Path -First 1 | Set-AzureADProvisioningAppSchema -ScimSchemaNamespace $ScimSchemaNamespace -TenantId $TenantId -ServicePrincipalId $ServicePrincipalId
     }
-    
     'GetPreviousCycleLogs' {
         Import-Module Microsoft.Graph.Applications -ErrorAction Stop
         Connect-MgGraph @paramConnectMgGraph -ErrorAction Stop | Out-Null
        
-        Get-ProvisioningCycleIdHistory $ServicePrincipalId -NumberOfCycles $NumberOfCycles | Get-ProvisioningCycleLogs -ShowCycleStatistics
+        Get-ProvisioningCycleIdHistory $ServicePrincipalId -NumberOfCycles $NumberOfCycles | Get-ProvisioningCycleLogs -SummarizeByChangeId -ShowCycleStatistics
     }
 }
 
