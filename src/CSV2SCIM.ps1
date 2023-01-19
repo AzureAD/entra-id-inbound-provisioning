@@ -603,8 +603,8 @@ function Get-ProvisioningCycleLogs {
                         "SourceId"         = $log.Group[0].SourceIdentity.Id
                         "TargetId"         = $log.Group[0].TargetIdentity.Id
                         "DisplayName"      = $log.Group[0].TargetIdentity.DisplayName
-                        "Action"           = $log.Group.Action
-                        "Status"           = $log.Group.StatusInfo.Status
+                        "Action"           = $log.Group.ProvisioningAction
+                        "Status"           = $log.Group.ProvisioningStatusInfo.Status
                         "ActivityDateTime" = $log.Group[0].ActivityDateTime
                         "CycleId"          = $log.Group[0].CycleId
                         "ProvisioningLogs" = $log.Group
@@ -715,7 +715,7 @@ function Get-ProvisioningLogStatistics {
             if ($CycleTracker.ChangeIds.Add($ProvisioningLog.ChangeId)) { $CycleSummary.Changes++ }
             if ($CycleTracker.UserIds.Add($ProvisioningLog.SourceIdentity.Id)) { $CycleSummary.Users++ }
 
-            $CycleSummary.ActionStatistics | Where-Object Action -EQ $ProvisioningLog.Action | ForEach-Object { $_.($ProvisioningLog.StatusInfo.Status)++ }
+            $CycleSummary.ActionStatistics | Where-Object Action -EQ $ProvisioningLog.ProvisioningAction | ForEach-Object { $_.($ProvisioningLog.ProvisioningStatusInfo.Status)++ }
         }
     }
 
