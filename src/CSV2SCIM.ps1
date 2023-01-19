@@ -715,7 +715,7 @@ function Get-ProvisioningLogStatistics {
             if ($CycleTracker.ChangeIds.Add($ProvisioningLog.ChangeId)) { $CycleSummary.Changes++ }
             if ($CycleTracker.UserIds.Add($ProvisioningLog.SourceIdentity.Id)) { $CycleSummary.Users++ }
 
-            $CycleSummary.ActionStatistics | Where-Object Action -EQ $ProvisioningLog.Action | ForEach-Object { $_.($ProvisioningLog.StatusInfo.Status)++ }
+            $CycleSummary.ActionStatistics | Where-Object Action -EQ $ProvisioningLog.ProvisioningAction | ForEach-Object { $_.($ProvisioningLog.ProvisioningStatusInfo.Status)++ }
         }
     }
 
