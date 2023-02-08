@@ -2,6 +2,23 @@
 .SYNOPSIS
     Generate and send user data to Azure AD Provisioning.
 
+.DESCRIPTION
+    There are 5 execution modes:
+        - ValidateAttributeMapping
+        - GenerateScimPayload
+        - SendScimRequest
+        - UpdateScimSchema
+        - GetPreviousCycleLogs
+
+    The following module must be installed:
+    Install-Module -Name Microsoft.Graph.Applications,Microsoft.Graph.Reports
+
+.EXAMPLE
+    PS > $AttributeMapping = Import-PowerShellDataFile '.\Samples\AttributeMapping.psd1'
+    PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -AttributeMapping $AttributeMapping -ValidateAttributeMapping
+
+    Validate Attribute Mapping Against SCIM Schema.   
+
 .EXAMPLE
     PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -ScimSchemaNamespace 'urn:ietf:params:scim:schemas:extension:csv:1.0:User' -AttributeMapping @{ externalId = 'WorkerID'; userName = 'UserID'; active = { $_.'WorkerStatus' -eq 'Active' } }
 
@@ -29,12 +46,6 @@
     PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -ScimSchemaNamespace 'urn:ietf:params:scim:schemas:extension:csv:1.0:User' -TenantId 00000000-0000-0000-0000-000000000000 -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -UpdateSchema
 
     Update schema on Azure AD provisioning application with schema extension 'urn:ietf:params:scim:schemas:extension:csv:1.0:User' based on CSV file.
-
-.EXAMPLE
-    PS > $AttributeMapping = Import-PowerShellDataFile '.\Samples\AttributeMapping.psd1'
-    PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -AttributeMapping $AttributeMapping -ValidateAttributeMapping
-
-    Validate Attribute Mapping Against SCIM Schema.   
 
 .EXAMPLE
     PS > CSV2SCIM.ps1 -TenantId 00000000-0000-0000-0000-000000000000 -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -GetPreviousCycleLogs
@@ -281,7 +292,13 @@ function ConvertTo-ScimPayload {
                     if (!$TargetObject['schemas'].Contains($_AttributeMapping.Key)) { $TargetObject['schemas'] += $_AttributeMapping.Key }
                 }
 
-                $TargetObject[$_AttributeMapping.Key] = Resolve-PropertyMappingValue $InputObject $_AttributeMapping.Value
+                if ($_AttributeMapping.Value -is [array]) {
+                    ## Force array output
+                    $TargetObject[$_AttributeMapping.Key] = @(Resolve-PropertyMappingValue $InputObject $_AttributeMapping.Value)
+                }
+                else {
+                    $TargetObject[$_AttributeMapping.Key] = Resolve-PropertyMappingValue $InputObject $_AttributeMapping.Value
+                }
             }
 
             return $TargetObject
@@ -399,7 +416,7 @@ function Invoke-AzureADBulkScimRequest {
 
     begin {
         ## Import Mg Modules
-        Import-Module Microsoft.Graph.Applications -ErrorAction Stop
+        Import-Module Microsoft.Graph.Applications -MaximumVersion 1.99.0 -ErrorAction Stop
 
         ## Connect to MgGraph Module
         #Connect-MgGraph -Scopes 'Directory.ReadWrite.All' -ErrorAction Stop
@@ -452,7 +469,7 @@ function Set-AzureADProvisioningAppSchema {
         [bool] $UpdateComplete = $false
 
         ## Import Mg Modules
-        Import-Module Microsoft.Graph.Applications -ErrorAction Stop
+        Import-Module Microsoft.Graph.Applications -MaximumVersion 1.99.0 -ErrorAction Stop
 
         ## Connect to MgGraph Module
         #Connect-MgGraph -Scopes 'Directory.ReadWrite.All' -ErrorAction Stop
@@ -762,7 +779,7 @@ if ($ClientCertificate) {
 }
 elseif ($ClientId) {
     $paramConnectMgGraph['ClientId'] = $ClientId
-    $paramConnectMgGraph['Scope'] = 'Directory.ReadWrite.All'
+    $paramConnectMgGraph['Scope'] = 'Directory.ReadWrite.All', 'AuditLog.Read.All'
 }
 else {
     $paramConnectMgGraph['Scope'] = 'Directory.ReadWrite.All', 'AuditLog.Read.All'
@@ -779,20 +796,20 @@ switch ($PSCmdlet.ParameterSetName) {
     }
     'SendScimRequest' {
         if (Test-ScimAttributeMapping $AttributeMapping -ScimSchemaNamespace 'urn:ietf:params:scim:schemas:core:2.0:User') {
-            Import-Module Microsoft.Graph.Applications -ErrorAction Stop
+            Import-Module Microsoft.Graph.Applications -MaximumVersion 1.99.0 -ErrorAction Stop
             Connect-MgGraph @paramConnectMgGraph -ErrorAction Stop | Out-Null
 
             Import-Csv -Path $Path | ConvertTo-ScimBulkPayload -ScimSchemaNamespace $ScimSchemaNamespace -AttributeMapping $AttributeMapping | Invoke-AzureADBulkScimRequest -ServicePrincipalId $ServicePrincipalId -ErrorAction Stop
         }
     }
     'UpdateScimSchema' {
-        Import-Module Microsoft.Graph.Applications -ErrorAction Stop
+        Import-Module Microsoft.Graph.Applications -MaximumVersion 1.99.0 -ErrorAction Stop
         Connect-MgGraph @paramConnectMgGraph -ErrorAction Stop | Out-Null
 
         Get-Content -Path $Path -First 1 | Set-AzureADProvisioningAppSchema -ScimSchemaNamespace $ScimSchemaNamespace -ServicePrincipalId $ServicePrincipalId
     }
     'GetPreviousCycleLogs' {
-        Import-Module Microsoft.Graph.Applications -ErrorAction Stop
+        Import-Module Microsoft.Graph.Applications,Microsoft.Graph.Reports -MaximumVersion 1.99.0 -ErrorAction Stop
         Connect-MgGraph @paramConnectMgGraph -ErrorAction Stop | Out-Null
        
         Get-ProvisioningCycleIdHistory $ServicePrincipalId -NumberOfCycles $NumberOfCycles | Get-ProvisioningCycleLogs -SummarizeByChangeId -ShowCycleStatistics
