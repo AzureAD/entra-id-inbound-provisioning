@@ -138,9 +138,6 @@ function Test-ScimAttributeMapping {
     ## Initialize
     $result = $true
 
-    ## ToDo: Add Warning for schemas that could not be validated
-    ## ToDo: Add logic to handle multivalued complex subattributes
-
     foreach ($_PropertyMapping in $AttributeMapping.GetEnumerator()) {
 
         if ($_PropertyMapping.Key -in 'id', 'externalId') { continue }
@@ -153,20 +150,37 @@ function Test-ScimAttributeMapping {
                     $nestedResult = Test-ScimAttributeMapping $_PropertyMapping.Value $_PropertyMapping.Key
                     $result = $result -and $nestedResult
                 }
+                else {
+                    Write-Warning ('SCIM Schema Namespace [{0}] was not be validated because no schema representation has been defined.' -f $_PropertyMapping.Key)
+                }
             }
-            elseif ($_PropertyMapping.Value -is [hashtable] -or $_PropertyMapping.Value -is [System.Collections.Specialized.OrderedDictionary]) {
-                $nestedResult = Test-ScimAttributeMapping $_PropertyMapping.Value $ScimSchemaNamespace $NewHierarchyPath
-                $result = $result -and $nestedResult
-            }
-            else {
-                if ($ScimSchemas.ContainsKey($ScimSchemaNamespace)) {
-                    $ScimSchemaAttribute = $ScimSchemas[$ScimSchemaNamespace].attributes | Where-Object name -EQ $NewHierarchyPath[0]
-                    for ($i = 1; $i -lt $NewHierarchyPath.Count; $i++) {
-                        $ScimSchemaAttribute = $ScimSchemaAttribute.subAttributes | Where-Object name -EQ $NewHierarchyPath[$i]
-                    }
-                    if (!$ScimSchemaAttribute) {
-                        Write-Error ('Attribute [{0}] does not exist in SCIM Schema Namespace [{1}]' -f ($NewHierarchyPath -join '.'), $ScimSchemaNamespace)
+            elseif ($ScimSchemas.ContainsKey($ScimSchemaNamespace)) {
+                $ScimSchemaAttribute = $ScimSchemas[$ScimSchemaNamespace].attributes | Where-Object name -EQ $NewHierarchyPath[0]
+                for ($i = 1; $i -lt $NewHierarchyPath.Count; $i++) {
+                    $ScimSchemaAttribute = $ScimSchemaAttribute.subAttributes | Where-Object name -EQ $NewHierarchyPath[$i]
+                }
+                if (!$ScimSchemaAttribute) {
+                    Write-Error ('Attribute [{0}] does not exist in SCIM Schema Namespace [{1}].' -f ($NewHierarchyPath -join '.'), $ScimSchemaNamespace)
+                    $result = $false
+                }
+                else {
+                    if ($ScimSchemaAttribute.multiValued -and $_PropertyMapping.Value -isnot [array]) {
+                        Write-Error ('Attribute [{0}] is multivalued in SCIM Schema Namespace [{1}] and must contain an array.' -f ($NewHierarchyPath -join '.'), $ScimSchemaNamespace)
                         $result = $false
+                    }
+                    foreach ($_PropertyMappingValue in $_PropertyMapping.Value) {
+                        if ($ScimSchemaAttribute.type -eq 'Complex' -and $_PropertyMappingValue -is [string]) {
+                            Write-Error ('Attribute [{0}] of Type [{2}] in SCIM Schema Namespace [{1}] cannot have simple mapping.' -f ($NewHierarchyPath -join '.'), $ScimSchemaNamespace, $ScimSchemaAttribute.type)
+                            $result = $false
+                        }
+                        elseif ($ScimSchemaAttribute.type -ne 'Complex' -and ($_PropertyMappingValue -is [hashtable] -or $_PropertyMappingValue -is [System.Collections.Specialized.OrderedDictionary])) {
+                            Write-Error ('Attribute [{0}] of Type [{2}] in SCIM Schema Namespace [{1}] cannot have complex mapping.' -f ($NewHierarchyPath -join '.'), $ScimSchemaNamespace, $ScimSchemaAttribute.type)
+                            $result = $false
+                        }
+                        elseif ($_PropertyMappingValue -is [hashtable] -or $_PropertyMappingValue -is [System.Collections.Specialized.OrderedDictionary]) {
+                            $nestedResult = Test-ScimAttributeMapping $_PropertyMappingValue $ScimSchemaNamespace $NewHierarchyPath
+                            $result = $result -and $nestedResult
+                        }
                     }
                 }
             }
