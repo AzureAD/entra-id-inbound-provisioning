@@ -242,7 +242,7 @@ function ConvertTo-ScimBulkPayload {
             $ScimBulkObjectInstance.Operations.Add($ScimOperationObject)
 
             # Output object when max operations has been reached
-            if ($ScimBulkObjectInstance.Operations.Count -ge $OperationsPerRequest) {
+            if ($OperationsPerRequest -gt 0 -and $ScimBulkObjectInstance.Operations.Count -ge $OperationsPerRequest) {
                 if ($PassThru) { $ScimBulkObjectInstance }
                 else { ConvertTo-Json $ScimBulkObjectInstance -Depth 10 }
                 $ScimBulkObjectInstance = $ScimBulkObject.psobject.Copy()
