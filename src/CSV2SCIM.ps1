@@ -57,6 +57,11 @@
 
     Get provisioning statistics from provisioning logs for the latest 2 cycles and save the log details to a variable for futher analysis.
 
+.EXAMPLE
+    PS > $ProvisioningLogsDetails = CSV2SCIM.ps1 -TenantId 00000000-0000-0000-0000-000000000000 -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -GetPreviousCycleLogs -NumberOfCycles 2
+
+    Get
+
 #>
 [CmdletBinding(DefaultParameterSetName = 'GenerateScimPayload')]
 param (
