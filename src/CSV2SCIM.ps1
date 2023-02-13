@@ -66,6 +66,8 @@ param (
     [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'UpdateScimSchema')]
     [Parameter(Mandatory = $false, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'ValidateAttributeMapping')]
     [string] $Path,
+    [Parameter(Mandatory = $false, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'SendScimRequest')]
+    [switch] $RestartService,
     # Map all input properties to specified custom SCIM namespace. For example: "urn:ietf:params:scim:schemas:extension:csv:1.0:User"
     [Parameter(Mandatory = $false, ParameterSetName = 'GenerateScimPayload')]
     [Parameter(Mandatory = $false, ParameterSetName = 'SendScimRequest')]
@@ -443,7 +445,7 @@ function Invoke-AzureADBulkScimRequest {
         $ServicePrincipalId = Get-MgServicePrincipal -Filter "id eq '$ServicePrincipalId' or appId eq '$ServicePrincipalId'" -Select id | Select-Object -ExpandProperty id
         #$ServicePrincipal = Get-MgServicePrincipal -ServicePrincipalId $ServicePrincipalId -ErrorAction Stop
         $SyncJob = Get-MgServicePrincipalSynchronizationJob -ServicePrincipalId $ServicePrincipalId -ErrorAction Stop
-       
+   
     }
     
     process {
@@ -453,6 +455,10 @@ function Invoke-AzureADBulkScimRequest {
     }
 
     end {
+        if ($RestartService)
+        {
+            ReStart-MgServicePrincipalSynchronizationJob -ServicePrincipalId $ServicePrincipalId -SynchronizationJobId $($SyncJob.Id)
+        }
         if ($previousProfile.Name -ne (Get-MgProfile).Name) {
             Select-MgProfile -Name $previousProfile.Name
         }
