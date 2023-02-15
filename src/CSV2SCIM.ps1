@@ -31,8 +31,8 @@
     Generate a SCIM bulk request payload from CSV file using AttributeMapping file.
 
 .EXAMPLE
-    PS > $AttributeMapping = Import-PowerShellDataFile '.\Samples\AttributeMapping.psd1'
-    PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -AttributeMapping $AttributeMapping -TenantId 00000000-0000-0000-0000-000000000000 -ServicePrincipalId 00000000-0000-0000-0000-000000000000
+        PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -AttributeMapping $AttributeMapping -TenantId 00000000-0000-0000-0000-000000000000 -ServicePrincipalId 00000000-0000-0000-0000-000000000000
+PS > $AttributeMapping = Import-PowerShellDataFile '.\Samples\AttributeMapping.psd1'
 
     Generate a SCIM bulk request payload from CSV file and send SCIM bulk request to Azure AD.
     
@@ -450,7 +450,9 @@ function Invoke-AzureADBulkScimRequest {
         $ServicePrincipalId = Get-MgServicePrincipal -Filter "id eq '$ServicePrincipalId' or appId eq '$ServicePrincipalId'" -Select id | Select-Object -ExpandProperty id
         #$ServicePrincipal = Get-MgServicePrincipal -ServicePrincipalId $ServicePrincipalId -ErrorAction Stop
         $SyncJob = Get-MgServicePrincipalSynchronizationJob -ServicePrincipalId $ServicePrincipalId -ErrorAction Stop
-   
+        if ($RestartService)
+        {
+            Suspend-MgServicePrincipalSynchronizationJob -ServicePrincipalId $ServicePrincipalId -SynchronizationJobId $($SyncJob.Id)}
     }
     
     process {
@@ -462,7 +464,7 @@ function Invoke-AzureADBulkScimRequest {
     end {
         if ($RestartService)
         {
-            ReStart-MgServicePrincipalSynchronizationJob -ServicePrincipalId $ServicePrincipalId -SynchronizationJobId $($SyncJob.Id)
+            Start-MgServicePrincipalSynchronizationJob -ServicePrincipalId $ServicePrincipalId -SynchronizationJobId $($SyncJob.Id)
         }
         if ($previousProfile.Name -ne (Get-MgProfile).Name) {
             Select-MgProfile -Name $previousProfile.Name
