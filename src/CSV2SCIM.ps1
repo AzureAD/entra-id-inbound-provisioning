@@ -31,10 +31,12 @@
     Generate a SCIM bulk request payload from CSV file using AttributeMapping file.
 
 .EXAMPLE
-        PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -AttributeMapping $AttributeMapping -TenantId 00000000-0000-0000-0000-000000000000 -ServicePrincipalId 00000000-0000-0000-0000-000000000000
-PS > $AttributeMapping = Import-PowerShellDataFile '.\Samples\AttributeMapping.psd1'
+    PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -AttributeMapping $AttributeMapping -TenantId 00000000-0000-0000-0000-000000000000 -ServicePrincipalId 00000000-0000-0000-0000-000000000000
+    PS > $AttributeMapping = Import-PowerShellDataFile '.\Samples\AttributeMapping.psd1'
 
-    Generate a SCIM bulk request payload from CSV file and send SCIM bulk request to Azure AD.
+         Generate a SCIM bulk request payload from CSV file and send SCIM bulk request to Azure AD.
+    
+    
     
 .EXAMPLE
     PS > $AttributeMapping = Import-PowerShellDataFile '.\Samples\AttributeMapping.psd1'
@@ -54,13 +56,14 @@ PS > $AttributeMapping = Import-PowerShellDataFile '.\Samples\AttributeMapping.p
 
 .EXAMPLE
     PS > $ProvisioningLogsDetails = CSV2SCIM.ps1 -TenantId 00000000-0000-0000-0000-000000000000 -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -GetPreviousCycleLogs -NumberOfCycles 2
-
+ 
     Get provisioning statistics from provisioning logs for the latest 2 cycles and save the log details to a variable for futher analysis.
 
 .EXAMPLE
-    PS > $ProvisioningLogsDetails = CSV2SCIM.ps1 -TenantId 00000000-0000-0000-0000-000000000000 -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -GetPreviousCycleLogs -NumberOfCycles 2
-
-    Get
+    PS C:\GitCode\azure-activedirectory-provisioning-from-hr> .\src\csv2scim.ps1 -ServicePrincipalId $ServicePrincipal -TenantId $tenantid -Path ".\Samples\csv-with-2-records.csv" -RestartService -AttributeMapping $attributMapping
+    
+     Generate a SCIM bulk request payload from CSV file, send SCIM bulk request to Azure AD and restart the provisioning service
+    
 
 #>
 [CmdletBinding(DefaultParameterSetName = 'GenerateScimPayload')]
@@ -71,7 +74,7 @@ param (
     [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'UpdateScimSchema')]
     [Parameter(Mandatory = $false, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'ValidateAttributeMapping')]
     [string] $Path,
-    [Parameter(Mandatory = $false, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'SendScimRequest')]
+    [Parameter(Mandatory = $false,ParameterSetName = 'SendScimRequest')]
     [switch] $RestartService,
     # Map all input properties to specified custom SCIM namespace. For example: "urn:ietf:params:scim:schemas:extension:csv:1.0:User"
     [Parameter(Mandatory = $false, ParameterSetName = 'GenerateScimPayload')]
@@ -452,7 +455,8 @@ function Invoke-AzureADBulkScimRequest {
         $SyncJob = Get-MgServicePrincipalSynchronizationJob -ServicePrincipalId $ServicePrincipalId -ErrorAction Stop
         if ($RestartService)
         {
-            Suspend-MgServicePrincipalSynchronizationJob -ServicePrincipalId $ServicePrincipalId -SynchronizationJobId $($SyncJob.Id)}
+            Suspend-MgServicePrincipalSynchronizationJob -ServicePrincipalId $ServicePrincipalId -SynchronizationJobId $SyncJob.Id
+        }
     }
     
     process {
@@ -464,7 +468,7 @@ function Invoke-AzureADBulkScimRequest {
     end {
         if ($RestartService)
         {
-            Start-MgServicePrincipalSynchronizationJob -ServicePrincipalId $ServicePrincipalId -SynchronizationJobId $($SyncJob.Id)
+            Start-MgServicePrincipalSynchronizationJob -ServicePrincipalId $ServicePrincipalId -SynchronizationJobId $SyncJob.Id
         }
         if ($previousProfile.Name -ne (Get-MgProfile).Name) {
             Select-MgProfile -Name $previousProfile.Name
