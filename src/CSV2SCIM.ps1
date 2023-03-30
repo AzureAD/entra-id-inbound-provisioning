@@ -60,7 +60,7 @@
     Get provisioning statistics from provisioning logs for the latest 2 cycles and save the log details to a variable for futher analysis.
 
 .EXAMPLE
-    PS C:\GitCode\azure-activedirectory-provisioning-from-hr> .\src\csv2scim.ps1 -ServicePrincipalId $ServicePrincipal -TenantId $tenantid -Path ".\Samples\csv-with-2-records.csv" -RestartService -AttributeMapping $attributMapping
+    PS > CSV2SCIM.ps1 -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -TenantId 00000000-0000-0000-0000-000000000000 -Path ".\Samples\csv-with-2-records.csv" -RestartService -AttributeMapping $attributMapping
     
      Generate a SCIM bulk request payload from CSV file, send SCIM bulk request to Azure AD and restart the provisioning service
     
