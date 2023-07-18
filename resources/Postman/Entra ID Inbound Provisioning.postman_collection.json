@@ -1,0 +1,278 @@
+{
+	"info": {
+		"_postman_id": "260d9034-f6af-45d6-8f3a-144d331abffd",
+		"name": "Entra ID Inbound Provisioning",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "1013773"
+	},
+	"item": [
+		{
+			"name": "SCIM bulk request upload",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/scim+json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"schemas\": [\"urn:ietf:params:scim:api:messages:2.0:BulkRequest\"],\r\n    \"Operations\": [{\r\n            \"method\": \"POST\",\r\n            \"bulkId\": \"897401c2-2de4-4b87-a97f-c02de3bcfc61\",\r\n            \"path\": \"/Users\",\r\n            \"data\": {\r\n                \"schemas\": [\"urn:ietf:params:scim:schemas:core:2.0:User\",\r\n                    \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\",\r\n                    \"urn:ietf:params:scim:schemas:extension:csv:1.0:User\"],\r\n                \"id\": \"2819c223-7f76-453a-919d-413861904646\",\r\n                \"externalId\": \"521195\",\r\n                \"userName\": \"monicang\",\r\n                \"name\": {\r\n                    \"familyName\": \"Ang\",\r\n                    \"givenName\": \"Monica\"\r\n                },\r\n                \"displayName\": \"Monica Ang\",\r\n                \"nickName\": \"Monica\",\r\n                \"emails\": [{\r\n                        \"value\": \"monicang@contoso.com\",\r\n                        \"type\": \"work\",\r\n                        \"primary\": true\r\n                    }\r\n                ],\r\n                \"addresses\": [{\r\n                        \"type\": \"work\",\r\n                        \"streetAddress\": \"201 Universal City Plaza\",\r\n                        \"locality\": \"Boston\",\r\n                        \"region\": \"MA\",\r\n                        \"postalCode\": \"52116\",\r\n                        \"country\": \"USA\",\r\n                        \"primary\": true\r\n                    }\r\n                ],\r\n                \"phoneNumbers\": [{\r\n                        \"value\": \"555-555-5555\",\r\n                        \"type\": \"work\"\r\n                    }\r\n                ],\r\n                \"userType\": \"Employee\",\r\n                \"title\": \"President, Consulting Services\",\r\n                \"preferredLanguage\": \"en-US\",\r\n                \"locale\": \"en-US\",\r\n                \"timezone\": \"America/Boston\",\r\n                \"active\": true,\r\n                \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\": {\r\n                    \"employeeNumber\": \"521195\",\r\n                    \"organization\": \"Contoso Global Services, Inc. (USA)\",\r\n                    \"department\": \"Operations\",\r\n                    \"manager\": {\r\n                        \"value\": \"521097\",\r\n                        \"$ref\": \"../Users/26118915-6090-4610-87e4-49d8ca9f808d\",\r\n                        \"displayName\": \"John Smith\"\r\n                    }\r\n                },\r\n                \"urn:ietf:params:scim:schemas:extension:csv:1.0:User\": {\r\n                    \"HireDate\": \"2022-07-01\",\r\n                    \"JobCode\": \"AB-1001\"\r\n                }\r\n            }\r\n        }, {\r\n            \"method\": \"POST\",\r\n            \"bulkId\": \"897401c2-2de4-4b87-a37f-c02de3bcfc61\",\r\n            \"path\": \"/Users\",\r\n            \"data\": {\r\n                \"schemas\": [\"urn:ietf:params:scim:schemas:core:2.0:User\",\r\n                    \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\",\r\n                    \"urn:ietf:params:scim:schemas:extension:csv:1.0:User\"],\r\n                \"id\": \"2819c223-7f76-453a-919d-413761904646\",\r\n                \"externalId\": \"521193\",\r\n                \"userName\": \"dparker\",\r\n                \"name\": {\r\n                    \"familyName\": \"Parker\",\r\n                    \"givenName\": \"Darryl\"\r\n                },\r\n                \"displayName\": \"Darryl Parker\",\r\n                \"nickName\": \"Darryl\",\r\n                \"emails\": [{\r\n                        \"value\": \"dparker@contoso.com\",\r\n                        \"type\": \"work\",\r\n                        \"primary\": true\r\n                    }\r\n                ],\r\n                \"addresses\": [{\r\n                        \"type\": \"work\",\r\n                        \"streetAddress\": \"101 Grove City Plaza\",\r\n                        \"locality\": \"New York\",\r\n                        \"region\": \"NY\",\r\n                        \"postalCode\": \"10036\",\r\n                        \"country\": \"USA\",\r\n                        \"primary\": true\r\n                    }\r\n                ],\r\n                \"phoneNumbers\": [{\r\n                        \"value\": \"555-555-5545\",\r\n                        \"type\": \"work\"\r\n                    }\r\n                ],\r\n                \"userType\": \"Employee\",\r\n                \"title\": \"Program Manager\",\r\n                \"preferredLanguage\": \"en-US\",\r\n                \"locale\": \"en-US\",\r\n                \"timezone\": \"America/Los_Angeles\",\r\n                \"active\": true,\r\n                \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\": {\r\n                    \"employeeNumber\": \"521193\",\r\n                    \"organization\": \"Contoso Global Services, Inc. (USA)\",\r\n                    \"department\": \"Program Management\",\r\n                    \"manager\": {\r\n                        \"value\": \"521097\",\r\n                        \"$ref\": \"../Users/26118915-6090-4610-87e4-49d8ca9f808d\"\r\n                    }\r\n                },\r\n                \"urn:ietf:params:scim:schemas:extension:csv:1.0:User\": {\r\n                    \"HireDate\": \"2021-05-01T00:00:00-05:00\",\r\n                    \"JobCode\": \"AB-1002\"\r\n                }\r\n            }\r\n        }, {\r\n            \"method\": \"POST\",\r\n            \"bulkId\": \"897401c2-2de4-4b87-a97f-c02de3bcfd61\",\r\n            \"path\": \"/Users\",\r\n            \"data\": {\r\n                \"schemas\": [\"urn:ietf:params:scim:schemas:core:2.0:User\",\r\n                    \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\",\r\n                    \"urn:ietf:params:scim:schemas:extension:csv:1.0:User\"],\r\n                \"id\": \"2819c223-7f76-453a-919d-413861904656\",\r\n                \"externalId\": \"521194\",\r\n                \"userName\": \"cabbott\",\r\n                \"name\": {\r\n                    \"familyName\": \"Abbott\",\r\n                    \"givenName\": \"Carol\"\r\n                },\r\n                \"displayName\": \"Carol Abbott\",\r\n                \"nickName\": \"Carol\",\r\n                \"emails\": [{\r\n                        \"value\": \"cabbott@contoso.com\",\r\n                        \"type\": \"work\",\r\n                        \"primary\": true\r\n                    }\r\n                ],\r\n                \"addresses\": [{\r\n                        \"type\": \"work\",\r\n                        \"streetAddress\": \"201 Madison Ave\",\r\n                        \"locality\": \"Chicago\",\r\n                        \"region\": \"IL\",\r\n                        \"postalCode\": \"60604\",\r\n                        \"country\": \"USA\",\r\n                        \"primary\": true\r\n                    }\r\n                ],\r\n                \"phoneNumbers\": [{\r\n                        \"value\": \"555-555-5345\",\r\n                        \"type\": \"work\"\r\n                    }\r\n                ],\r\n                \"userType\": \"Employee\",\r\n                \"title\": \"Director, Consulting Services\",\r\n                \"preferredLanguage\": \"en-US\",\r\n                \"locale\": \"en-US\",\r\n                \"timezone\": \"America/Chicago\",\r\n                \"active\": true,\r\n                \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\": {\r\n                    \"employeeNumber\": \"521194\",\r\n                    \"organization\": \"Contoso Global Services, Inc. (USA)\",\r\n                    \"department\": \"Consulting Services\",\r\n                    \"manager\": {\r\n                        \"value\": \"521193\",\r\n                        \"$ref\": \"../Users/26118915-6090-4610-87e4-49d8ca9f808d\"\r\n                    }\r\n                },\r\n                \"urn:ietf:params:scim:schemas:extension:csv:1.0:User\": {\r\n                    \"HireDate\": \"2020-07-01T00:00:00-05:00\",\r\n                    \"JobCode\": \"CB-1002\"\r\n                }\r\n            }\r\n        }\r\n    ],\r\n    \"failOnErrors\": null\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{bulk_upload_endpoint}}",
+					"host": [
+						"{{bulk_upload_endpoint}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get all provisioning log records",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://graph.microsoft.com/beta/auditLogs/provisioning/?$filter=jobid eq '{{jobId}}'",
+					"protocol": "https",
+					"host": [
+						"graph",
+						"microsoft",
+						"com"
+					],
+					"path": [
+						"beta",
+						"auditLogs",
+						"provisioning",
+						""
+					],
+					"query": [
+						{
+							"key": "$filter",
+							"value": "jobid eq '{{jobId}}'"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Check provisioning logs for failures after certain time",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://graph.microsoft.com/beta/auditLogs/provisioning/?$filter=jobid eq '{{jobId}}' and statusInfo/status eq 'failure' and activityDateTime ge 2022-10-10T09:47:34Z",
+					"protocol": "https",
+					"host": [
+						"graph",
+						"microsoft",
+						"com"
+					],
+					"path": [
+						"beta",
+						"auditLogs",
+						"provisioning",
+						""
+					],
+					"query": [
+						{
+							"key": "$filter",
+							"value": "jobid eq '{{jobId}}' and statusInfo/status eq 'failure' and activityDateTime ge 2022-10-10T09:47:34Z"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Check provisioning logs for a specific user by id",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://graph.microsoft.com/beta/auditLogs/provisioning/?$filter=jobid eq '{{jobId}}' and sourceIdentity/id eq '701984'",
+					"protocol": "https",
+					"host": [
+						"graph",
+						"microsoft",
+						"com"
+					],
+					"path": [
+						"beta",
+						"auditLogs",
+						"provisioning",
+						""
+					],
+					"query": [
+						{
+							"key": "$filter",
+							"value": "jobid eq '{{jobId}}' and sourceIdentity/id eq '701984'"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Send non-SCIM data (failure)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/scim+json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"name\":\"John Doe\"}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{bulk_upload_endpoint}}",
+					"host": [
+						"{{bulk_upload_endpoint}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "oauth2",
+		"oauth2": [
+			{
+				"key": "scope",
+				"value": "",
+				"type": "string"
+			},
+			{
+				"key": "resource",
+				"value": {
+					"d62b0443-fc72-4154-91c4-da18c9781618": "{{ms_graph_resource_id}}"
+				},
+				"type": "any"
+			},
+			{
+				"key": "clientSecret",
+				"value": "{{client_secret}}",
+				"type": "string"
+			},
+			{
+				"key": "grant_type",
+				"value": "client_credentials",
+				"type": "string"
+			},
+			{
+				"key": "authUrl",
+				"value": "https://login.microsoftonline.com/{{tenant_id}}/oauth2/v2.0/authorize",
+				"type": "string"
+			},
+			{
+				"key": "clientId",
+				"value": "{{client_id}}",
+				"type": "string"
+			},
+			{
+				"key": "accessTokenUrl",
+				"value": "{{token_endpoint}}",
+				"type": "string"
+			},
+			{
+				"key": "tokenName",
+				"value": "AADToken",
+				"type": "string"
+			},
+			{
+				"key": "challengeAlgorithm",
+				"value": "S256",
+				"type": "string"
+			},
+			{
+				"key": "useBrowser",
+				"value": true,
+				"type": "boolean"
+			},
+			{
+				"key": "addTokenTo",
+				"value": "header",
+				"type": "string"
+			},
+			{
+				"key": "client_authentication",
+				"value": "header",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

@@ -1,14 +1,14 @@
-# Project
+# Microsoft Entra ID API-driven inbound provisioning
 
-> This repo has been populated by an initial template to help get you started. Please
-> make sure to update the content to build a great experience for community-building.
+This project hosts resources and samples to help you get started with [Microsoft Entra ID API-driven inbound provisioning](https://learn.microsoft.com/azure/active-directory/app-provisioning/inbound-provisioning-api-concepts).
 
-As the maintainer of this project, please make a few updates:
+## Content hierarchy
 
-- Improving this README.MD file to provide a great experience
-- Updating SUPPORT.MD with content about this project's support experience
-- Understanding the security reporting process in SECURITY.MD
-- Remove this section from the README
+The project directories are organized by the integration platform / tool that you'd like to use for implementing your API client.
+
+* **LogicApps** directory: Do you prefer using Azure LogicApps for your inbound provisioning integration? This sub-directory hosts a sample Logic Apps workflow (CSV2SCIMBulkUpload) to help you get started!
+* **Postman** directory: Looking for a Postman collection to evaluate the inbound provisioning API? Your search ends here. This sub-directory has Postman request collection and environment files to help you get started!
+* **PowerShell** directory: Are you a PowerShell scripting fan? This sub-directory has a sample CSV2SCIM PowerShell script that can read any CSV file and convert the contents to a SCIM Bulk request payload that you can send to the inbound provisioning API endpoint.
 
 ## Contributing
 
