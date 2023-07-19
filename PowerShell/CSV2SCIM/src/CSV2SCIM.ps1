@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Generate and send user data to Azure AD Provisioning.
+    Generate and send user data to Microsoft Entra ID Provisioning /bulkUpload API endpoint.
 
 .DESCRIPTION
     There are 5 execution modes:
@@ -34,7 +34,7 @@
     PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -AttributeMapping $AttributeMapping -TenantId 00000000-0000-0000-0000-000000000000 -ServicePrincipalId 00000000-0000-0000-0000-000000000000
     PS > $AttributeMapping = Import-PowerShellDataFile '.\Samples\AttributeMapping.psd1'
 
-         Generate a SCIM bulk request payload from CSV file and send SCIM bulk request to Azure AD.
+         Generate a SCIM bulk request payload from CSV file and send SCIM bulk request to Entra ID.
     
     
     
@@ -42,12 +42,12 @@
     PS > $AttributeMapping = Import-PowerShellDataFile '.\Samples\AttributeMapping.psd1'
     PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -AttributeMapping $AttributeMapping -TenantId 00000000-0000-0000-0000-000000000000 -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -ClientId 00000000-0000-0000-0000-000000000000 -ClientCertificate (Get-ChildItem Cert:\CurrentUser\My\0000000000000000000000000000000000000000)
 
-    Generate a SCIM bulk request payload from CSV file and send SCIM bulk request to Azure AD using service principal with certificate authentication.
+    Generate a SCIM bulk request payload from CSV file and send SCIM bulk request to Entra ID using service principal with certificate authentication.
 
 .EXAMPLE
     PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -ScimSchemaNamespace 'urn:ietf:params:scim:schemas:extension:csv:1.0:User' -TenantId 00000000-0000-0000-0000-000000000000 -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -UpdateSchema
 
-    Update schema on Azure AD provisioning application with schema extension 'urn:ietf:params:scim:schemas:extension:csv:1.0:User' based on CSV file.
+    Update schema on Entra ID provisioning application with schema extension 'urn:ietf:params:scim:schemas:extension:csv:1.0:User' based on CSV file.
 
 .EXAMPLE
     PS > CSV2SCIM.ps1 -TenantId 00000000-0000-0000-0000-000000000000 -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -GetPreviousCycleLogs
@@ -62,7 +62,7 @@
 .EXAMPLE
     PS > CSV2SCIM.ps1 -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -TenantId 00000000-0000-0000-0000-000000000000 -Path ".\Samples\csv-with-2-records.csv" -RestartService -AttributeMapping $attributMapping
     
-     Generate a SCIM bulk request payload from CSV file, send SCIM bulk request to Azure AD and restart the provisioning service
+     Generate a SCIM bulk request payload from CSV file, send SCIM bulk request to Entra ID and restart the provisioning service
     
 
 #>
@@ -425,7 +425,7 @@ function ConvertTo-ScimPayload {
 
 <#
 .SYNOPSIS
-    Send SCIM Bulk Payloads to Azure AD
+    Send SCIM Bulk Payloads to Entra ID
 #>
 function Invoke-AzureADBulkScimRequest {
     [CmdletBinding()]
@@ -479,7 +479,7 @@ function Invoke-AzureADBulkScimRequest {
 
 <#
 .SYNOPSIS
-    Update schema of Azure AD Provisioning app
+    Update schema of Entra ID Provisioning app
 #>
 function Set-AzureADProvisioningAppSchema {
     [CmdletBinding()]
