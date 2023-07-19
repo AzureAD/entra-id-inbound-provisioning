@@ -6,9 +6,9 @@ This project hosts resources and samples to help you get started with [Microsoft
 
 The project directories are organized by the integration platform / tool that you'd like to use for implementing your API client.
 
-* **LogicApps** directory: Do you prefer using Azure LogicApps for your inbound provisioning integration? This sub-directory hosts a sample Logic Apps workflow (CSV2SCIMBulkUpload) to help you get started!
-* **Postman** directory: Looking for a Postman collection to evaluate the inbound provisioning API? Your search ends here. This sub-directory has Postman request collection and environment files to help you get started!
-* **PowerShell** directory: Are you a PowerShell scripting fan? This sub-directory has a sample CSV2SCIM PowerShell script that can read any CSV file and convert the contents to a SCIM Bulk request payload that you can send to the inbound provisioning API endpoint.
+* [**LogicApps** directory](./LogicApps): Do you prefer using Azure LogicApps for your inbound provisioning integration? This sub-directory hosts a sample Logic Apps workflow (CSV2SCIMBulkUpload) to help you get started!
+* [**Postman** directory](./Postman): Looking for a Postman collection to evaluate the inbound provisioning API? Your search ends here. This sub-directory has Postman request collection and environment files to help you get started!
+* [**PowerShell** directory](./PowerShell): Are you a PowerShell scripting fan? This sub-directory has a sample CSV2SCIM PowerShell script that can read any CSV file and convert the contents to a SCIM bulk request payload that you can send to the inbound provisioning API endpoint.
 
 ## Contributing
 
