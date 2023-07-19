@@ -846,10 +846,3 @@ switch ($PSCmdlet.ParameterSetName) {
         Get-ProvisioningCycleIdHistory $ServicePrincipalId -NumberOfCycles $NumberOfCycles | Get-ProvisioningCycleLogs -SummarizeByChangeId -ShowCycleStatistics
     }
 }
-
-### Possible Enhancements:
-## ToDo: Check for failed records after 60 minute delay and copy them to new CSV for retry?
-## ToDo: New mode to create scheduled task with correct parameters for easy setup on Windows Server. Also, option to create new self-signed cert and confidential client app reg?
-## ToDo: Use Client Secret or Managed Identity for authentication? Requires upgrade to MS Graph PowerShell SDK v2. https://devblogs.microsoft.com/microsoft365dev/microsoft-graph-powershell-v2-is-now-in-public-preview-half-the-size-and-will-speed-up-your-automations/
-## ToDo: Accept AttributeMappings from .psd1 file on Scim generation commands?
-## ToDo: Run in two passes? First, ensure the user exists. Second, rerun with reference attributes. Not needed? Each cycle already does a second pass?
