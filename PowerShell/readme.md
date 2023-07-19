@@ -13,4 +13,11 @@ CSV2SCIM.ps1 -Path <path-to-csv-file>
 [-ClientId <client-id>]
 [-ClientCertificate <certificate-object>]
 ```
+## How to file issues and get help  
+
+This sample asset uses GitHub Issues to track bugs and feature requests. Please search the existing 
+issues before filing new issues to avoid duplicates.  For new issues, file your bug or 
+feature request as a new Issue.
+
+For help and questions about Entra ID API-driven inbound provisioning, refer to the [documentation](https://aka.ms/Entra/ProvisionFromAnySource)
 
