@@ -100,10 +100,12 @@ param (
     # Id of client application used to authenticate to tenant and MS Graph
     [Parameter(Mandatory = $false, ParameterSetName = 'SendScimRequest')]
     [Parameter(Mandatory = $false, ParameterSetName = 'UpdateScimSchema')]
+    [Parameter(Mandatory = $false, ParameterSetName = 'GetPreviousCycleLogs')]	
     [string] $ClientId,
     # Certificate used to authenticate as client application
     [Parameter(Mandatory = $false, ParameterSetName = 'SendScimRequest')]
     [Parameter(Mandatory = $false, ParameterSetName = 'UpdateScimSchema')]
+    [Parameter(Mandatory = $false, ParameterSetName = 'GetPreviousCycleLogs')]	
     [System.Security.Cryptography.X509Certificates.X509Certificate2] $ClientCertificate,
     # Update provisioning application schema to include custom SCIM namespace for all input properties
     [Parameter(Mandatory = $true, ParameterSetName = 'UpdateScimSchema')]
@@ -810,10 +812,10 @@ if ($ClientCertificate) {
 }
 elseif ($ClientId) {
     $paramConnectMgGraph['ClientId'] = $ClientId
-    $paramConnectMgGraph['Scope'] = 'Directory.ReadWrite.All', 'AuditLog.Read.All'
+    $paramConnectMgGraph['Scopes'] = 'Application.ReadWrite.All', 'AuditLog.Read.All','SynchronizationData-User.Upload' 
 }
 else {
-    $paramConnectMgGraph['Scope'] = 'Directory.ReadWrite.All', 'AuditLog.Read.All'
+    $paramConnectMgGraph['Scopes'] = 'Application.ReadWrite.All', 'AuditLog.Read.All','SynchronizationData-User.Upload'
 }
 
 switch ($PSCmdlet.ParameterSetName) {
