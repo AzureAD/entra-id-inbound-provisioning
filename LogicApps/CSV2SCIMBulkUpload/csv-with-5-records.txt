@@ -1,0 +1,6 @@
+WorkerID,WorkerStatus,WorkerType,UserID,FirstName,LastName,FullName,GenderPronoun,ManagerID,HireDate,OnLeave,Department,Division,CostCenter,Company,Location,JobTitle,StreetAddress,City,CountryCode,OfficePhone,Custom01,Custom02,ZipCode
+1222,Active,Employee,EMP1222,Talya,Fleeta,Talya Fleeta,HE/HIM,1684,2013-01-01,True,Sales,Electronics,CC3035,Woodgrove,Europe,Sales Executive,303 Mansion Ct,Chicago,UK,259-915-1098,T1001,BTK39,85434
+1727,Active,Contractor,EMP1727,Myriam,Durware,Myriam Durware,HE/HIM,1222,2017-03-09,True,Sales,Electronics,CC3035,Woodgrove,Europe,Vice President,,Chicago,DE,259-915-1098,T1001,,53965
+1513,Active,Contractor,EMP1513,Ginnie,Fadiman,Ginnie Fadiman,HE/HIM,1222,2010-07-10,False,Product Engineering,Logistics,CC3035,Woodgrove,Asia Pacific,Project Manager,101 Woodgrove Way,Frankfurt,UK,259-915-1098,Y1083,,79985
+1783,Active,Employee,EMP1783,Genevra,Melony,Genevra Melony,THEY/THEM,1222,2017-08-21,True,Sales,Media,CC5081,Fabrikam,Asia Pacific,Software Developer,303 Mansion Ct,Chicago,US,150-150-1586,C1084,,71677
+1895,Active,Employee,EMP1895,Nyssa,Roscoe,Nyssa Roscoe,SHE/HER,1222,2019-07-03,False,Manufacturing,Pharma,CC9016,Woodgrove,Middle East,Engineering Manager,303 Mansion Ct,Chicago,US,150-150-1586,C1084,,71677 
