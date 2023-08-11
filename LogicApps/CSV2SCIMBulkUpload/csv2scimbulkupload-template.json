@@ -338,6 +338,11 @@
                         "urn:ietf:params:scim:schemas:extension:csv:1.0:User"
                       ],
                       "title": "@{items('For_each')?['JobTitle']}",
+                      "urn:ietf:params:scim:schemas:extension:csv:1.0:User": {
+                         "GenderPronoun": "@{items('For_each')?['GenderPronoun']}",
+                         "HireDate": "@{items('For_each')?['HireDate']}",
+                         "JobCode": "@{items('For_each')?['Custom01']}"
+                      },                      
                       "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": {
                         "costCenter": "@{items('For_each')?['CostCenter']}",
                         "department": "@{items('For_each')?['Department']}",
@@ -345,10 +350,6 @@
                         "employeeNumber": "@{items('For_each')?['WorkerID']}",
                         "manager": {
                           "value": "@{items('For_each')?['ManagerID']}"
-                        },
-                        "urn:ietf:params:scim:schemas:extension:csv:1.0:User": {
-                          "HireDate": "@{items('For_each')?['HireDate']}",
-                          "JobCode": "AB-1001"
                         }
                       },
                       "userName": "@{items('For_each')?['UserID']}",
