@@ -1,6 +1,6 @@
-# Microsoft Entra ID API-driven inbound provisioning
+# Microsoft Entra API-driven inbound provisioning
 
-This project hosts resources and samples to help you get started with [Microsoft Entra ID API-driven inbound provisioning](https://learn.microsoft.com/azure/active-directory/app-provisioning/inbound-provisioning-api-concepts). With API-driven inbound provisioning, the Entra ID provisioning service now supports integration with any system of record. Customers and partners can use any automation tool of their choice to retrieve workforce data from the system of record and ingest it into Entra ID and connected on-premises Active Directory domains.
+This project hosts resources and samples to help you get started with [Microsoft Entra API-driven inbound provisioning](https://learn.microsoft.com/azure/active-directory/app-provisioning/inbound-provisioning-api-concepts). With API-driven inbound provisioning, Microsoft Entra provisioning service now supports integration with any system of record. Customers and partners can use any automation tool of their choice to retrieve workforce data from the system of record and ingest it into Microsoft Entra ID and connected on-premises Active Directory domains.
 
 ## Content hierarchy
 
