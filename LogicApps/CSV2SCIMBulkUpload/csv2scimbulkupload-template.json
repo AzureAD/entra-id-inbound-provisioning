@@ -327,7 +327,6 @@
                         "givenName": "@{items('For_each')?['FirstName']}"
                       },
                       "nickName": "@{items('For_each')?['UserID']}",
-                      "organization": "@{items('For_each')?['Company']}",
                       "phoneNumbers": {
                         "type": "work",
                         "value": "@{items('For_each')?['OfficePhone']}"
@@ -344,6 +343,7 @@
                          "JobCode": "@{items('For_each')?['Custom01']}"
                       },                      
                       "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": {
+                        "organization": "@{items('For_each')?['Company']}",                        
                         "costCenter": "@{items('For_each')?['CostCenter']}",
                         "department": "@{items('For_each')?['Department']}",
                         "division": "@{items('For_each')?['Division']}",
