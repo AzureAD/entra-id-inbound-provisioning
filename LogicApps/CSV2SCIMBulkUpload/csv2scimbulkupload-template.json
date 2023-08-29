@@ -313,13 +313,15 @@
                     "bulkId": "@{guid()}",
                     "data": {
                       "active": "@if(equals(items('For_each')?['WorkerStatus'],'Active'),true,false)",
-                      "addresses": {
+                      "addresses": [
+                        {
                         "country": "@{items('For_each')?['CountryCode']}",
                         "locality": "@{items('For_each')?['City']}",
                         "postalCode": "@{items('For_each')?['ZipCode']}",
                         "streetAddress": "@{items('For_each')?['StreetAddress']}",
                         "type": "work"
-                      },
+                        }
+                      ],
                       "displayName": "@{items('For_each')?['FullName']}",
                       "externalId": "@{items('For_each')?['WorkerID']}",
                       "name": {
@@ -327,10 +329,12 @@
                         "givenName": "@{items('For_each')?['FirstName']}"
                       },
                       "nickName": "@{items('For_each')?['UserID']}",
-                      "phoneNumbers": {
+                      "phoneNumbers": [
+                        {
                         "type": "work",
                         "value": "@{items('For_each')?['OfficePhone']}"
-                      },
+                        }
+                      ],
                       "schemas": [
                         "urn:ietf:params:scim:schemas:core:2.0:User",
                         "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User",
