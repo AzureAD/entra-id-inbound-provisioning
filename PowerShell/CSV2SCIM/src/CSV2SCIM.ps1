@@ -442,14 +442,14 @@ function Invoke-AzureADBulkScimRequest {
 
     begin {
         ## Import Mg Modules
-        Import-Module Microsoft.Graph.Applications -MaximumVersion 1.99.0 -ErrorAction Stop
+        Import-Module Microsoft.Graph.Applications -ErrorAction Stop
 
         ## Connect to MgGraph Module
         #Connect-MgGraph -Scopes 'Directory.ReadWrite.All' -ErrorAction Stop
-        $previousProfile = Get-MgProfile
-        if ($previousProfile.Name -ne 'beta') {
-            Select-MgProfile -Name 'beta'
-        }
+    #    $previousProfile = Get-MgProfile
+     #   if ($previousProfile.Name -ne 'beta') {
+      #      Select-MgProfile -Name 'beta'
+       # }
 
         ## Lookup Service Principal
         $ServicePrincipalId = Get-MgServicePrincipal -Filter "id eq '$ServicePrincipalId' or appId eq '$ServicePrincipalId'" -Select id | Select-Object -ExpandProperty id
@@ -472,9 +472,9 @@ function Invoke-AzureADBulkScimRequest {
         {
             Start-MgServicePrincipalSynchronizationJob -ServicePrincipalId $ServicePrincipalId -SynchronizationJobId $SyncJob.Id
         }
-        if ($previousProfile.Name -ne (Get-MgProfile).Name) {
-            Select-MgProfile -Name $previousProfile.Name
-        }
+   #     if ($previousProfile.Name -ne (Get-MgProfile).Name) {
+    #        Select-MgProfile -Name $previousProfile.Name
+     #   }
     }
 }
 
@@ -502,14 +502,14 @@ function Set-AzureADProvisioningAppSchema {
         [bool] $UpdateComplete = $false
 
         ## Import Mg Modules
-        Import-Module Microsoft.Graph.Applications -MaximumVersion 1.99.0 -ErrorAction Stop
+        Import-Module Microsoft.Graph.Applications -ErrorAction Stop
 
         ## Connect to MgGraph Module
         #Connect-MgGraph -Scopes 'Directory.ReadWrite.All' -ErrorAction Stop
-        $previousProfile = Get-MgProfile
-        if ($previousProfile.Name -ne 'beta') {
-            Select-MgProfile -Name 'beta'
-        }
+     #   $previousProfile = Get-MgProfile
+      #  if ($previousProfile.Name -ne 'beta') {
+       #     Select-MgProfile -Name 'beta'
+        #}
 
         ## Lookup Service Principal
         $ServicePrincipalId = Get-MgServicePrincipal -Filter "id eq '$ServicePrincipalId' or appId eq '$ServicePrincipalId'" -Select id | Select-Object -ExpandProperty id
@@ -567,9 +567,9 @@ function Set-AzureADProvisioningAppSchema {
     }
 
     end {
-        if ($previousProfile.Name -ne (Get-MgProfile).Name) {
-            Select-MgProfile -Name $previousProfile.Name
-        }
+     #   if ($previousProfile.Name -ne (Get-MgProfile).Name) {
+      #      Select-MgProfile -Name $previousProfile.Name
+       # }
     }
 }
 
@@ -589,10 +589,10 @@ function Get-ProvisioningCycleIdHistory {
     )
 
     begin {
-        $previousProfile = Get-MgProfile
-        if ($previousProfile.Name -ne 'beta') {
-            Select-MgProfile -Name 'beta'
-        }
+     #   $previousProfile = Get-MgProfile
+      #  if ($previousProfile.Name -ne 'beta') {
+       #     Select-MgProfile -Name 'beta'
+        #}
 
         $ServicePrincipalId = Get-MgServicePrincipal -Filter "id eq '$ServicePrincipalId' or appId eq '$ServicePrincipalId'" -Select id | Select-Object -ExpandProperty id
         $SyncJob = Get-MgServicePrincipalSynchronizationJob -ServicePrincipalId $ServicePrincipalId -ErrorAction Stop
@@ -615,9 +615,9 @@ function Get-ProvisioningCycleIdHistory {
     }
 
     end {
-        if ($previousProfile.Name -ne (Get-MgProfile).Name) {
-            Select-MgProfile -Name $previousProfile.Name
-        }
+     #   if ($previousProfile.Name -ne (Get-MgProfile).Name) {
+      #      Select-MgProfile -Name $previousProfile.Name
+       # }
     }
 }
 
@@ -829,14 +829,14 @@ switch ($PSCmdlet.ParameterSetName) {
     }
     'SendScimRequest' {
         if (Test-ScimAttributeMapping $AttributeMapping -ScimSchemaNamespace 'urn:ietf:params:scim:schemas:core:2.0:User') {
-            Import-Module Microsoft.Graph.Applications -MaximumVersion 1.99.0 -ErrorAction Stop
+            Import-Module Microsoft.Graph.Applications -ErrorAction Stop
             Connect-MgGraph @paramConnectMgGraph -ErrorAction Stop | Out-Null
 
             Import-Csv -Path $Path | ConvertTo-ScimBulkPayload -ScimSchemaNamespace $ScimSchemaNamespace -AttributeMapping $AttributeMapping | Invoke-AzureADBulkScimRequest -ServicePrincipalId $ServicePrincipalId -ErrorAction Stop
         }
     }
     'UpdateScimSchema' {
-        Import-Module Microsoft.Graph.Applications -MaximumVersion 1.99.0 -ErrorAction Stop
+        Import-Module Microsoft.Graph.Applications -ErrorAction Stop
         Connect-MgGraph @paramConnectMgGraph -ErrorAction Stop | Out-Null
 
         Get-Content -Path $Path -First 1 | Set-AzureADProvisioningAppSchema -ScimSchemaNamespace $ScimSchemaNamespace -ServicePrincipalId $ServicePrincipalId
