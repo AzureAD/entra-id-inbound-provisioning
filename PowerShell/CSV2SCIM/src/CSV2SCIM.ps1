@@ -842,7 +842,7 @@ switch ($PSCmdlet.ParameterSetName) {
         Get-Content -Path $Path -First 1 | Set-AzureADProvisioningAppSchema -ScimSchemaNamespace $ScimSchemaNamespace -ServicePrincipalId $ServicePrincipalId
     }
     'GetPreviousCycleLogs' {
-        Import-Module Microsoft.Graph.Applications,Microsoft.Graph.Reports -MaximumVersion 1.99.0 -ErrorAction Stop
+        Import-Module Microsoft.Graph.Applications,Microsoft.Graph.Reports -ErrorAction Stop
         Connect-MgGraph @paramConnectMgGraph -ErrorAction Stop | Out-Null
        
         Get-ProvisioningCycleIdHistory $ServicePrincipalId -NumberOfCycles $NumberOfCycles | Get-ProvisioningCycleLogs -SummarizeByChangeId -ShowCycleStatistics
