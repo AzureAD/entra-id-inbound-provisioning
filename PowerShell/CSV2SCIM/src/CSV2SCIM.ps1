@@ -624,7 +624,7 @@ function Get-ProvisioningCycleIdHistory {
         #}
 
         $ServicePrincipalId = Get-MgServicePrincipal -Filter "id eq '$ServicePrincipalId' or appId eq '$ServicePrincipalId'" -Select id | Select-Object -ExpandProperty id
-    # Fix: cycle history queries must bind to one concrete synchronization job to avoid invalid filter construction.
+        # Fix: cycle history queries must bind to one concrete synchronization job to avoid invalid filter construction.
         $SyncJob = Get-PrimarySynchronizationJob -ServicePrincipalId $ServicePrincipalId
         [string[]] $cycleIDs = @()
     }
