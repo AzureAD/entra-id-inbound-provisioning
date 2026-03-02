@@ -17,7 +17,7 @@
     PS > $AttributeMapping = Import-PowerShellDataFile '.\Samples\AttributeMapping.psd1'
     PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -AttributeMapping $AttributeMapping -ValidateAttributeMapping
 
-    Validate Attribute Mapping Against SCIM Schema.   
+    Validate Attribute Mapping Against SCIM Schema.
 
 .EXAMPLE
     PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -ScimSchemaNamespace 'urn:ietf:params:scim:schemas:extension:csv:1.0:User' -AttributeMapping @{ externalId = 'WorkerID'; userName = 'UserID'; active = { $_.'WorkerStatus' -eq 'Active' } }
@@ -34,10 +34,10 @@
     PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -AttributeMapping $AttributeMapping -TenantId 00000000-0000-0000-0000-000000000000 -ServicePrincipalId 00000000-0000-0000-0000-000000000000
     PS > $AttributeMapping = Import-PowerShellDataFile '.\Samples\AttributeMapping.psd1'
 
-         Generate a SCIM bulk request payload from CSV file and send SCIM bulk request to Entra ID.
-    
-    
-    
+    Generate a SCIM bulk request payload from CSV file and send SCIM bulk request to Entra ID.
+
+
+
 .EXAMPLE
     PS > $AttributeMapping = Import-PowerShellDataFile '.\Samples\AttributeMapping.psd1'
     PS > CSV2SCIM.ps1 -Path '.\Samples\csv-with-1000-records.csv' -AttributeMapping $AttributeMapping -TenantId 00000000-0000-0000-0000-000000000000 -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -ClientId 00000000-0000-0000-0000-000000000000 -ClientCertificate (Get-ChildItem Cert:\CurrentUser\My\0000000000000000000000000000000000000000)
@@ -56,14 +56,14 @@
 
 .EXAMPLE
     PS > $ProvisioningLogsDetails = CSV2SCIM.ps1 -TenantId 00000000-0000-0000-0000-000000000000 -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -GetPreviousCycleLogs -NumberOfCycles 2
- 
-    Get provisioning statistics from provisioning logs for the latest 2 cycles and save the log details to a variable for futher analysis.
+
+    Get provisioning statistics from provisioning logs for the latest 2 cycles and save the log details to a variable for further analysis.
 
 .EXAMPLE
-    PS > CSV2SCIM.ps1 -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -TenantId 00000000-0000-0000-0000-000000000000 -Path ".\Samples\csv-with-2-records.csv" -RestartService -AttributeMapping $attributMapping
-    
-     Generate a SCIM bulk request payload from CSV file, send SCIM bulk request to Entra ID and restart the provisioning service
-    
+    PS > CSV2SCIM.ps1 -ServicePrincipalId 00000000-0000-0000-0000-000000000000 -TenantId 00000000-0000-0000-0000-000000000000 -Path ".\Samples\csv-with-2-records.csv" -RestartService -AttributeMapping $attributeMapping
+
+    Generate a SCIM bulk request payload from CSV file, send SCIM bulk request to Entra ID and restart the provisioning service
+
 
 #>
 [CmdletBinding(DefaultParameterSetName = 'GenerateScimPayload')]
@@ -74,7 +74,7 @@ param (
     [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'UpdateScimSchema')]
     [Parameter(Mandatory = $false, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'ValidateAttributeMapping')]
     [string] $Path,
-    [Parameter(Mandatory = $false,ParameterSetName = 'SendScimRequest')]
+    [Parameter(Mandatory = $false, ParameterSetName = 'SendScimRequest')]
     [switch] $RestartService,
     # Map all input properties to specified custom SCIM namespace. For example: "urn:ietf:params:scim:schemas:extension:csv:1.0:User"
     [Parameter(Mandatory = $false, ParameterSetName = 'GenerateScimPayload')]
@@ -100,12 +100,12 @@ param (
     # Id of client application used to authenticate to tenant and MS Graph
     [Parameter(Mandatory = $false, ParameterSetName = 'SendScimRequest')]
     [Parameter(Mandatory = $false, ParameterSetName = 'UpdateScimSchema')]
-    [Parameter(Mandatory = $false, ParameterSetName = 'GetPreviousCycleLogs')]	
+    [Parameter(Mandatory = $false, ParameterSetName = 'GetPreviousCycleLogs')]
     [string] $ClientId,
     # Certificate used to authenticate as client application
     [Parameter(Mandatory = $false, ParameterSetName = 'SendScimRequest')]
     [Parameter(Mandatory = $false, ParameterSetName = 'UpdateScimSchema')]
-    [Parameter(Mandatory = $false, ParameterSetName = 'GetPreviousCycleLogs')]	
+    [Parameter(Mandatory = $false, ParameterSetName = 'GetPreviousCycleLogs')]
     [System.Security.Cryptography.X509Certificates.X509Certificate2] $ClientCertificate,
     # Update provisioning application schema to include custom SCIM namespace for all input properties
     [Parameter(Mandatory = $true, ParameterSetName = 'UpdateScimSchema')]
@@ -123,10 +123,37 @@ param (
 
 #region Script Variables and Functions
 
-### Cache SCIM Schema Representions for Validation
+### Cache SCIM Schema Representations for Validation
 $script:ScimSchemas = @{
-    "urn:ietf:params:scim:schemas:core:2.0:User"                 = '{"id":"urn:ietf:params:scim:schemas:core:2.0:User","name":"User","description":"User Account","attributes":[{"name":"userName","type":"string","multiValued":false,"description":"Unique identifier for the User, typically used by the user to directly authenticate to the service provider. Each User MUST include a non-empty userName value.  This identifier MUST be unique across the service provider''s entire set of Users. REQUIRED.","required":true,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"server"},{"name":"name","type":"complex","multiValued":false,"description":"The components of the user''s real name. Providers MAY return just the full name as a single string in the formatted sub-attribute, or they MAY return just the individual component attributes using the other sub-attributes, or they MAY return both.  If both variants are returned, they SHOULD be describing the same name, with the formatted name indicating how the component attributes should be combined.","required":false,"subAttributes":[{"name":"formatted","type":"string","multiValued":false,"description":"The full name, including all middle names, titles, and suffixes as appropriate, formatted for display (e.g., ''Ms. Barbara J Jensen, III'').","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"familyName","type":"string","multiValued":false,"description":"The family name of the User, or last name in most Western languages (e.g., ''Jensen'' given the full name ''Ms. Barbara J Jensen, III'').","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"givenName","type":"string","multiValued":false,"description":"The given name of the User, or first name in most Western languages (e.g., ''Barbara'' given the full name ''Ms. Barbara J Jensen, III'').","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"middleName","type":"string","multiValued":false,"description":"The middle name(s) of the User (e.g., ''Jane'' given the full name ''Ms. Barbara J Jensen, III'').","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"honorificPrefix","type":"string","multiValued":false,"description":"The honorific prefix(es) of the User, or title in most Western languages (e.g., ''Ms.'' given the full name ''Ms. Barbara J Jensen, III'').","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"honorificSuffix","type":"string","multiValued":false,"description":"The honorific suffix(es) of the User, or suffix in most Western languages (e.g., ''III'' given the full name ''Ms. Barbara J Jensen, III'').","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"}],"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"displayName","type":"string","multiValued":false,"description":"The name of the User, suitable for display to end-users.  The name SHOULD be the full name of the User being described, if known.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"nickName","type":"string","multiValued":false,"description":"The casual way to address the user in real life, e.g., ''Bob'' or ''Bobby'' instead of ''Robert''.  This attribute SHOULD NOT be used to represent a User''s username (e.g., ''bjensen'' or ''mpepperidge'').","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"profileUrl","type":"reference","referenceTypes":["external"],"multiValued":false,"description":"A fully qualified URL pointing to a page representing the User''s online profile.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"title","type":"string","multiValued":false,"description":"The user''s title, such as \"Vice President.\"","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"userType","type":"string","multiValued":false,"description":"Used to identify the relationship between the organization and the user.  Typical values used might be ''Contractor'', ''Employee'', ''Intern'', ''Temp'', ''External'', and ''Unknown'', but any value may be used.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"preferredLanguage","type":"string","multiValued":false,"description":"Indicates the User''s preferred written or spoken language.  Generally used for selecting a localized user interface; e.g., ''en_US'' specifies the language English and country US.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"locale","type":"string","multiValued":false,"description":"Used to indicate the User''s default location for purposes of localizing items such as currency, date time format, or numerical representations.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"timezone","type":"string","multiValued":false,"description":"The User''s time zone in the ''Olson'' time zone database format, e.g., ''America/Los_Angeles''.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"active","type":"boolean","multiValued":false,"description":"A Boolean value indicating the User''s administrative status.","required":false,"mutability":"readWrite","returned":"default"},{"name":"password","type":"string","multiValued":false,"description":"The User''s cleartext password.  This attribute is intended to be used as a means to specify an initial password when creating a new User or to reset an existing User''s password.","required":false,"caseExact":false,"mutability":"writeOnly","returned":"never","uniqueness":"none"},{"name":"emails","type":"complex","multiValued":true,"description":"Email addresses for the user.  The value SHOULD be canonicalized by the service provider, e.g., ''bjensen@example.com'' instead of ''bjensen@EXAMPLE.COM''. Canonical type values of ''work'', ''home'', and ''other''.","required":false,"subAttributes":[{"name":"value","type":"string","multiValued":false,"description":"Email addresses for the user.  The value SHOULD be canonicalized by the service provider, e.g., ''bjensen@example.com'' instead of ''bjensen@EXAMPLE.COM''. Canonical type values of ''work'', ''home'', and ''other''.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"display","type":"string","multiValued":false,"description":"A human-readable name, primarily used for display purposes.  READ-ONLY.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"type","type":"string","multiValued":false,"description":"A label indicating the attribute''s function, e.g., ''work'' or ''home''.","required":false,"caseExact":false,"canonicalValues":["work","home","other"],"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"primary","type":"boolean","multiValued":false,"description":"A Boolean value indicating the ''primary'' or preferred attribute value for this attribute, e.g., the preferred mailing address or primary email address.  The primary attribute value ''true'' MUST appear no more than once.","required":false,"mutability":"readWrite","returned":"default"}],"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"phoneNumbers","type":"complex","multiValued":true,"description":"Phone numbers for the User.  The value SHOULD be canonicalized by the service provider according to the format specified in RFC 3966, e.g., ''tel:+1-201-555-0123''. Canonical type values of ''work'', ''home'', ''mobile'', ''fax'', ''pager'', and ''other''.","required":false,"subAttributes":[{"name":"value","type":"string","multiValued":false,"description":"Phone number of the User.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"display","type":"string","multiValued":false,"description":"A human-readable name, primarily used for display purposes.  READ-ONLY.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"type","type":"string","multiValued":false,"description":"A label indicating the attribute''s function, e.g., ''work'', ''home'', ''mobile''.","required":false,"caseExact":false,"canonicalValues":["work","home","mobile","fax","pager","other"],"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"primary","type":"boolean","multiValued":false,"description":"A Boolean value indicating the ''primary'' or preferred attribute value for this attribute, e.g., the preferred phone number or primary phone number.  The primary attribute value ''true'' MUST appear no more than once.","required":false,"mutability":"readWrite","returned":"default"}],"mutability":"readWrite","returned":"default"},{"name":"ims","type":"complex","multiValued":true,"description":"Instant messaging addresses for the User.","required":false,"subAttributes":[{"name":"value","type":"string","multiValued":false,"description":"Instant messaging address for the User.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"display","type":"string","multiValued":false,"description":"A human-readable name, primarily used for display purposes.  READ-ONLY.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"type","type":"string","multiValued":false,"description":"A label indicating the attribute''s function, e.g., ''aim'', ''gtalk'', ''xmpp''.","required":false,"caseExact":false,"canonicalValues":["aim","gtalk","icq","xmpp","msn","skype","qq","yahoo"],"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"primary","type":"boolean","multiValued":false,"description":"A Boolean value indicating the ''primary'' or preferred attribute value for this attribute, e.g., the preferred messenger or primary messenger.  The primary attribute value ''true'' MUST appear no more than once.","required":false,"mutability":"readWrite","returned":"default"}],"mutability":"readWrite","returned":"default"},{"name":"photos","type":"complex","multiValued":true,"description":"URLs of photos of the User.","required":false,"subAttributes":[{"name":"value","type":"reference","referenceTypes":["external"],"multiValued":false,"description":"URL of a photo of the User.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"display","type":"string","multiValued":false,"description":"A human-readable name, primarily used for display purposes.  READ-ONLY.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"type","type":"string","multiValued":false,"description":"A label indicating the attribute''s function, i.e., ''photo'' or ''thumbnail''.","required":false,"caseExact":false,"canonicalValues":["photo","thumbnail"],"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"primary","type":"boolean","multiValued":false,"description":"A Boolean value indicating the ''primary'' or preferred attribute value for this attribute, e.g., the preferred photo or thumbnail.  The primary attribute value ''true'' MUST appear no more than once.","required":false,"mutability":"readWrite","returned":"default"}],"mutability":"readWrite","returned":"default"},{"name":"addresses","type":"complex","multiValued":true,"description":"A physical mailing address for this User. Canonical type values of ''work'', ''home'', and ''other''.  This attribute is a complex type with the following sub-attributes.","required":false,"subAttributes":[{"name":"formatted","type":"string","multiValued":false,"description":"The full mailing address, formatted for display or use with a mailing label.  This attribute MAY contain newlines.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"streetAddress","type":"string","multiValued":false,"description":"The full street address component, which may include house number, street name, P.O. box, and multi-line extended street address information.  This attribute MAY contain newlines.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"locality","type":"string","multiValued":false,"description":"The city or locality component.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"region","type":"string","multiValued":false,"description":"The state or region component.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"postalCode","type":"string","multiValued":false,"description":"The zip code or postal code component.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"country","type":"string","multiValued":false,"description":"The country name component.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"type","type":"string","multiValued":false,"description":"A label indicating the attribute''s function, e.g., ''work'' or ''home''.","required":false,"caseExact":false,"canonicalValues":["work","home","other"],"mutability":"readWrite","returned":"default","uniqueness":"none"}],"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"groups","type":"complex","multiValued":true,"description":"A list of groups to which the user belongs, either through direct membership, through nested groups, or dynamically calculated.","required":false,"subAttributes":[{"name":"value","type":"string","multiValued":false,"description":"The identifier of the User''s group.","required":false,"caseExact":false,"mutability":"readOnly","returned":"default","uniqueness":"none"},{"name":"$ref","type":"reference","referenceTypes":["User","Group"],"multiValued":false,"description":"The URI of the corresponding ''Group'' resource to which the user belongs.","required":false,"caseExact":false,"mutability":"readOnly","returned":"default","uniqueness":"none"},{"name":"display","type":"string","multiValued":false,"description":"A human-readable name, primarily used for display purposes.  READ-ONLY.","required":false,"caseExact":false,"mutability":"readOnly","returned":"default","uniqueness":"none"},{"name":"type","type":"string","multiValued":false,"description":"A label indicating the attribute''s function, e.g., ''direct'' or ''indirect''.","required":false,"caseExact":false,"canonicalValues":["direct","indirect"],"mutability":"readOnly","returned":"default","uniqueness":"none"}],"mutability":"readOnly","returned":"default"},{"name":"entitlements","type":"complex","multiValued":true,"description":"A list of entitlements for the User that represent a thing the User has.","required":false,"subAttributes":[{"name":"value","type":"string","multiValued":false,"description":"The value of an entitlement.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"display","type":"string","multiValued":false,"description":"A human-readable name, primarily used for display purposes.  READ-ONLY.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"type","type":"string","multiValued":false,"description":"A label indicating the attribute''s function.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"primary","type":"boolean","multiValued":false,"description":"A Boolean value indicating the ''primary'' or preferred attribute value for this attribute.  The primary attribute value ''true'' MUST appear no more than once.","required":false,"mutability":"readWrite","returned":"default"}],"mutability":"readWrite","returned":"default"},{"name":"roles","type":"complex","multiValued":true,"description":"A list of roles for the User that collectively represent who the User is, e.g., ''Student'', ''Faculty''.","required":false,"subAttributes":[{"name":"value","type":"string","multiValued":false,"description":"The value of a role.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"display","type":"string","multiValued":false,"description":"A human-readable name, primarily used for display purposes.  READ-ONLY.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"type","type":"string","multiValued":false,"description":"A label indicating the attribute''s function.","required":false,"caseExact":false,"canonicalValues":[],"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"primary","type":"boolean","multiValued":false,"description":"A Boolean value indicating the ''primary'' or preferred attribute value for this attribute.  The primary attribute value ''true'' MUST appear no more than once.","required":false,"mutability":"readWrite","returned":"default"}],"mutability":"readWrite","returned":"default"},{"name":"x509Certificates","type":"complex","multiValued":true,"description":"A list of certificates issued to the User.","required":false,"caseExact":false,"subAttributes":[{"name":"value","type":"binary","multiValued":false,"description":"The value of an X.509 certificate.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"display","type":"string","multiValued":false,"description":"A human-readable name, primarily used for display purposes.  READ-ONLY.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"type","type":"string","multiValued":false,"description":"A label indicating the attribute''s function.","required":false,"caseExact":false,"canonicalValues":[],"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"primary","type":"boolean","multiValued":false,"description":"A Boolean value indicating the ''primary'' or preferred attribute value for this attribute.  The primary attribute value ''true'' MUST appear no more than once.","required":false,"mutability":"readWrite","returned":"default"}],"mutability":"readWrite","returned":"default"}],"meta":{"resourceType":"Schema","location":"/v2/Schemas/urn:ietf:params:scim:schemas:core:2.0:User"}}' | ConvertFrom-Json
-    "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User" = '{"id":"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User","name":"EnterpriseUser","description":"Enterprise User","attributes":[{"name":"employeeNumber","type":"string","multiValued":false,"description":"Numeric or alphanumeric identifier assigned to a person, typically based on order of hire or association with anorganization.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"costCenter","type":"string","multiValued":false,"description":"Identifies the name of a cost center.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"organization","type":"string","multiValued":false,"description":"Identifies the name of an organization.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"division","type":"string","multiValued":false,"description":"Identifies the name of a division.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"department","type":"string","multiValued":false,"description":"Identifies the name of a department.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"manager","type":"complex","multiValued":false,"description":"The User''s manager. A complex type that optionally allows service providers to represent organizational hierarchy by referencing the ''id'' attribute of another User.","required":false,"subAttributes":[{"name":"value","type":"string","multiValued":false,"description":"The id of the SCIM resource representingthe User''s manager.  REQUIRED.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"$ref","type":"reference","referenceTypes":["User"],"multiValued":false,"description":"The URI of the SCIM resource representing the User''s manager.  REQUIRED.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"displayName","type":"string","multiValued":false,"description":"The displayName of the User''s manager. OPTIONAL and READ-ONLY.","required":false,"caseExact":false,"mutability":"readOnly","returned":"default","uniqueness":"none"}],"mutability":"readWrite","returned":"default"}],"meta":{"resourceType":"Schema","location":"/v2/Schemas/urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"}}' | ConvertFrom-Json
+    'urn:ietf:params:scim:schemas:core:2.0:User'                 = '{"id":"urn:ietf:params:scim:schemas:core:2.0:User","name":"User","description":"User Account","attributes":[{"name":"userName","type":"string","multiValued":false,"description":"Unique identifier for the User, typically used by the user to directly authenticate to the service provider. Each User MUST include a non-empty userName value.  This identifier MUST be unique across the service provider''s entire set of Users. REQUIRED.","required":true,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"server"},{"name":"name","type":"complex","multiValued":false,"description":"The components of the user''s real name. Providers MAY return just the full name as a single string in the formatted sub-attribute, or they MAY return just the individual component attributes using the other sub-attributes, or they MAY return both.  If both variants are returned, they SHOULD be describing the same name, with the formatted name indicating how the component attributes should be combined.","required":false,"subAttributes":[{"name":"formatted","type":"string","multiValued":false,"description":"The full name, including all middle names, titles, and suffixes as appropriate, formatted for display (e.g., ''Ms. Barbara J Jensen, III'').","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"familyName","type":"string","multiValued":false,"description":"The family name of the User, or last name in most Western languages (e.g., ''Jensen'' given the full name ''Ms. Barbara J Jensen, III'').","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"givenName","type":"string","multiValued":false,"description":"The given name of the User, or first name in most Western languages (e.g., ''Barbara'' given the full name ''Ms. Barbara J Jensen, III'').","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"middleName","type":"string","multiValued":false,"description":"The middle name(s) of the User (e.g., ''Jane'' given the full name ''Ms. Barbara J Jensen, III'').","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"honorificPrefix","type":"string","multiValued":false,"description":"The honorific prefix(es) of the User, or title in most Western languages (e.g., ''Ms.'' given the full name ''Ms. Barbara J Jensen, III'').","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"honorificSuffix","type":"string","multiValued":false,"description":"The honorific suffix(es) of the User, or suffix in most Western languages (e.g., ''III'' given the full name ''Ms. Barbara J Jensen, III'').","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"}],"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"displayName","type":"string","multiValued":false,"description":"The name of the User, suitable for display to end-users.  The name SHOULD be the full name of the User being described, if known.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"nickName","type":"string","multiValued":false,"description":"The casual way to address the user in real life, e.g., ''Bob'' or ''Bobby'' instead of ''Robert''.  This attribute SHOULD NOT be used to represent a User''s username (e.g., ''bjensen'' or ''mpepperidge'').","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"profileUrl","type":"reference","referenceTypes":["external"],"multiValued":false,"description":"A fully qualified URL pointing to a page representing the User''s online profile.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"title","type":"string","multiValued":false,"description":"The user''s title, such as \"Vice President.\"","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"userType","type":"string","multiValued":false,"description":"Used to identify the relationship between the organization and the user.  Typical values used might be ''Contractor'', ''Employee'', ''Intern'', ''Temp'', ''External'', and ''Unknown'', but any value may be used.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"preferredLanguage","type":"string","multiValued":false,"description":"Indicates the User''s preferred written or spoken language.  Generally used for selecting a localized user interface; e.g., ''en_US'' specifies the language English and country US.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"locale","type":"string","multiValued":false,"description":"Used to indicate the User''s default location for purposes of localizing items such as currency, date time format, or numerical representations.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"timezone","type":"string","multiValued":false,"description":"The User''s time zone in the ''Olson'' time zone database format, e.g., ''America/Los_Angeles''.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"active","type":"boolean","multiValued":false,"description":"A Boolean value indicating the User''s administrative status.","required":false,"mutability":"readWrite","returned":"default"},{"name":"password","type":"string","multiValued":false,"description":"The User''s cleartext password.  This attribute is intended to be used as a means to specify an initial password when creating a new User or to reset an existing User''s password.","required":false,"caseExact":false,"mutability":"writeOnly","returned":"never","uniqueness":"none"},{"name":"emails","type":"complex","multiValued":true,"description":"Email addresses for the user.  The value SHOULD be canonicalized by the service provider, e.g., ''bjensen@example.com'' instead of ''bjensen@EXAMPLE.COM''. Canonical type values of ''work'', ''home'', and ''other''.","required":false,"subAttributes":[{"name":"value","type":"string","multiValued":false,"description":"Email addresses for the user.  The value SHOULD be canonicalized by the service provider, e.g., ''bjensen@example.com'' instead of ''bjensen@EXAMPLE.COM''. Canonical type values of ''work'', ''home'', and ''other''.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"display","type":"string","multiValued":false,"description":"A human-readable name, primarily used for display purposes.  READ-ONLY.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"type","type":"string","multiValued":false,"description":"A label indicating the attribute''s function, e.g., ''work'' or ''home''.","required":false,"caseExact":false,"canonicalValues":["work","home","other"],"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"primary","type":"boolean","multiValued":false,"description":"A Boolean value indicating the ''primary'' or preferred attribute value for this attribute, e.g., the preferred mailing address or primary email address.  The primary attribute value ''true'' MUST appear no more than once.","required":false,"mutability":"readWrite","returned":"default"}],"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"phoneNumbers","type":"complex","multiValued":true,"description":"Phone numbers for the User.  The value SHOULD be canonicalized by the service provider according to the format specified in RFC 3966, e.g., ''tel:+1-201-555-0123''. Canonical type values of ''work'', ''home'', ''mobile'', ''fax'', ''pager'', and ''other''.","required":false,"subAttributes":[{"name":"value","type":"string","multiValued":false,"description":"Phone number of the User.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"display","type":"string","multiValued":false,"description":"A human-readable name, primarily used for display purposes.  READ-ONLY.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"type","type":"string","multiValued":false,"description":"A label indicating the attribute''s function, e.g., ''work'', ''home'', ''mobile''.","required":false,"caseExact":false,"canonicalValues":["work","home","mobile","fax","pager","other"],"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"primary","type":"boolean","multiValued":false,"description":"A Boolean value indicating the ''primary'' or preferred attribute value for this attribute, e.g., the preferred phone number or primary phone number.  The primary attribute value ''true'' MUST appear no more than once.","required":false,"mutability":"readWrite","returned":"default"}],"mutability":"readWrite","returned":"default"},{"name":"ims","type":"complex","multiValued":true,"description":"Instant messaging addresses for the User.","required":false,"subAttributes":[{"name":"value","type":"string","multiValued":false,"description":"Instant messaging address for the User.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"display","type":"string","multiValued":false,"description":"A human-readable name, primarily used for display purposes.  READ-ONLY.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"type","type":"string","multiValued":false,"description":"A label indicating the attribute''s function, e.g., ''aim'', ''gtalk'', ''xmpp''.","required":false,"caseExact":false,"canonicalValues":["aim","gtalk","icq","xmpp","msn","skype","qq","yahoo"],"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"primary","type":"boolean","multiValued":false,"description":"A Boolean value indicating the ''primary'' or preferred attribute value for this attribute, e.g., the preferred messenger or primary messenger.  The primary attribute value ''true'' MUST appear no more than once.","required":false,"mutability":"readWrite","returned":"default"}],"mutability":"readWrite","returned":"default"},{"name":"photos","type":"complex","multiValued":true,"description":"URLs of photos of the User.","required":false,"subAttributes":[{"name":"value","type":"reference","referenceTypes":["external"],"multiValued":false,"description":"URL of a photo of the User.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"display","type":"string","multiValued":false,"description":"A human-readable name, primarily used for display purposes.  READ-ONLY.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"type","type":"string","multiValued":false,"description":"A label indicating the attribute''s function, i.e., ''photo'' or ''thumbnail''.","required":false,"caseExact":false,"canonicalValues":["photo","thumbnail"],"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"primary","type":"boolean","multiValued":false,"description":"A Boolean value indicating the ''primary'' or preferred attribute value for this attribute, e.g., the preferred photo or thumbnail.  The primary attribute value ''true'' MUST appear no more than once.","required":false,"mutability":"readWrite","returned":"default"}],"mutability":"readWrite","returned":"default"},{"name":"addresses","type":"complex","multiValued":true,"description":"A physical mailing address for this User. Canonical type values of ''work'', ''home'', and ''other''.  This attribute is a complex type with the following sub-attributes.","required":false,"subAttributes":[{"name":"formatted","type":"string","multiValued":false,"description":"The full mailing address, formatted for display or use with a mailing label.  This attribute MAY contain newlines.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"streetAddress","type":"string","multiValued":false,"description":"The full street address component, which may include house number, street name, P.O. box, and multi-line extended street address information.  This attribute MAY contain newlines.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"locality","type":"string","multiValued":false,"description":"The city or locality component.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"region","type":"string","multiValued":false,"description":"The state or region component.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"postalCode","type":"string","multiValued":false,"description":"The zip code or postal code component.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"country","type":"string","multiValued":false,"description":"The country name component.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"type","type":"string","multiValued":false,"description":"A label indicating the attribute''s function, e.g., ''work'' or ''home''.","required":false,"caseExact":false,"canonicalValues":["work","home","other"],"mutability":"readWrite","returned":"default","uniqueness":"none"}],"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"groups","type":"complex","multiValued":true,"description":"A list of groups to which the user belongs, either through direct membership, through nested groups, or dynamically calculated.","required":false,"subAttributes":[{"name":"value","type":"string","multiValued":false,"description":"The identifier of the User''s group.","required":false,"caseExact":false,"mutability":"readOnly","returned":"default","uniqueness":"none"},{"name":"$ref","type":"reference","referenceTypes":["User","Group"],"multiValued":false,"description":"The URI of the corresponding ''Group'' resource to which the user belongs.","required":false,"caseExact":false,"mutability":"readOnly","returned":"default","uniqueness":"none"},{"name":"display","type":"string","multiValued":false,"description":"A human-readable name, primarily used for display purposes.  READ-ONLY.","required":false,"caseExact":false,"mutability":"readOnly","returned":"default","uniqueness":"none"},{"name":"type","type":"string","multiValued":false,"description":"A label indicating the attribute''s function, e.g., ''direct'' or ''indirect''.","required":false,"caseExact":false,"canonicalValues":["direct","indirect"],"mutability":"readOnly","returned":"default","uniqueness":"none"}],"mutability":"readOnly","returned":"default"},{"name":"entitlements","type":"complex","multiValued":true,"description":"A list of entitlements for the User that represent a thing the User has.","required":false,"subAttributes":[{"name":"value","type":"string","multiValued":false,"description":"The value of an entitlement.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"display","type":"string","multiValued":false,"description":"A human-readable name, primarily used for display purposes.  READ-ONLY.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"type","type":"string","multiValued":false,"description":"A label indicating the attribute''s function.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"primary","type":"boolean","multiValued":false,"description":"A Boolean value indicating the ''primary'' or preferred attribute value for this attribute.  The primary attribute value ''true'' MUST appear no more than once.","required":false,"mutability":"readWrite","returned":"default"}],"mutability":"readWrite","returned":"default"},{"name":"roles","type":"complex","multiValued":true,"description":"A list of roles for the User that collectively represent who the User is, e.g., ''Student'', ''Faculty''.","required":false,"subAttributes":[{"name":"value","type":"string","multiValued":false,"description":"The value of a role.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"display","type":"string","multiValued":false,"description":"A human-readable name, primarily used for display purposes.  READ-ONLY.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"type","type":"string","multiValued":false,"description":"A label indicating the attribute''s function.","required":false,"caseExact":false,"canonicalValues":[],"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"primary","type":"boolean","multiValued":false,"description":"A Boolean value indicating the ''primary'' or preferred attribute value for this attribute.  The primary attribute value ''true'' MUST appear no more than once.","required":false,"mutability":"readWrite","returned":"default"}],"mutability":"readWrite","returned":"default"},{"name":"x509Certificates","type":"complex","multiValued":true,"description":"A list of certificates issued to the User.","required":false,"caseExact":false,"subAttributes":[{"name":"value","type":"binary","multiValued":false,"description":"The value of an X.509 certificate.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"display","type":"string","multiValued":false,"description":"A human-readable name, primarily used for display purposes.  READ-ONLY.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"type","type":"string","multiValued":false,"description":"A label indicating the attribute''s function.","required":false,"caseExact":false,"canonicalValues":[],"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"primary","type":"boolean","multiValued":false,"description":"A Boolean value indicating the ''primary'' or preferred attribute value for this attribute.  The primary attribute value ''true'' MUST appear no more than once.","required":false,"mutability":"readWrite","returned":"default"}],"mutability":"readWrite","returned":"default"}],"meta":{"resourceType":"Schema","location":"/v2/Schemas/urn:ietf:params:scim:schemas:core:2.0:User"}}' | ConvertFrom-Json
+    'urn:ietf:params:scim:schemas:extension:enterprise:2.0:User' = '{"id":"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User","name":"EnterpriseUser","description":"Enterprise User","attributes":[{"name":"employeeNumber","type":"string","multiValued":false,"description":"Numeric or alphanumeric identifier assigned to a person, typically based on order of hire or association with an organization.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"costCenter","type":"string","multiValued":false,"description":"Identifies the name of a cost center.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"organization","type":"string","multiValued":false,"description":"Identifies the name of an organization.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"division","type":"string","multiValued":false,"description":"Identifies the name of a division.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"department","type":"string","multiValued":false,"description":"Identifies the name of a department.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"manager","type":"complex","multiValued":false,"description":"The User''s manager. A complex type that optionally allows service providers to represent organizational hierarchy by referencing the ''id'' attribute of another User.","required":false,"subAttributes":[{"name":"value","type":"string","multiValued":false,"description":"The id of the SCIM resource representing the User''s manager.  REQUIRED.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"$ref","type":"reference","referenceTypes":["User"],"multiValued":false,"description":"The URI of the SCIM resource representing the User''s manager.  REQUIRED.","required":false,"caseExact":false,"mutability":"readWrite","returned":"default","uniqueness":"none"},{"name":"displayName","type":"string","multiValued":false,"description":"The displayName of the User''s manager. OPTIONAL and READ-ONLY.","required":false,"caseExact":false,"mutability":"readOnly","returned":"default","uniqueness":"none"}],"mutability":"readWrite","returned":"default"}],"meta":{"resourceType":"Schema","location":"/v2/Schemas/urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"}}' | ConvertFrom-Json
+}
+
+<#
+.SYNOPSIS
+    Returns a single synchronization job for a provisioning service principal.
+
+.DESCRIPTION
+    This helper was added to prevent execution failures where
+    Get-MgServicePrincipalSynchronizationJob returns multiple jobs and callers assume a single scalar Id.
+    It enforces a deterministic job choice, throws when none exist, and warns when multiple are present.
+#>
+function Get-PrimarySynchronizationJob {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [string] $ServicePrincipalId
+    )
+
+    $SyncJobs = @(Get-MgServicePrincipalSynchronizationJob -ServicePrincipalId $ServicePrincipalId -ErrorAction Stop)
+    if ($SyncJobs.Count -eq 0) {
+        throw ('No synchronization job found for service principal [{0}].' -f $ServicePrincipalId)
+    }
+    if ($SyncJobs.Count -gt 1) {
+        Write-Warning ('Multiple synchronization jobs found for service principal [{0}]. Using first job [{1}].' -f $ServicePrincipalId, $SyncJobs[0].Id)
+    }
+
+    return $SyncJobs[0]
 }
 
 <#
@@ -177,7 +204,7 @@ function Test-ScimAttributeMapping {
                 }
                 else {
                     if ($ScimSchemaAttribute.multiValued -and $_PropertyMapping.Value -isnot [array]) {
-                        Write-Error ('Attribute [{0}] is multivalued in SCIM Schema Namespace [{1}] and must contain an array.' -f ($NewHierarchyPath -join '.'), $ScimSchemaNamespace)
+                        Write-Error ('Attribute [{0}] is multi-valued in SCIM Schema Namespace [{1}] and must contain an array.' -f ($NewHierarchyPath -join '.'), $ScimSchemaNamespace)
                         $result = $false
                     }
                     foreach ($_PropertyMappingValue in $_PropertyMapping.Value) {
@@ -233,23 +260,23 @@ function ConvertTo-ScimBulkPayload {
 
     begin {
         $ScimBulkObject = [PSCustomObject][ordered]@{
-            "schemas"      = @("urn:ietf:params:scim:api:messages:2.0:BulkRequest")
-            "Operations"   = New-Object System.Collections.Generic.List[pscustomobject]
-            "failOnErrors" = $null
+            'schemas'      = @('urn:ietf:params:scim:api:messages:2.0:BulkRequest')
+            'Operations'   = New-Object System.Collections.Generic.List[PSCustomObject]
+            'failOnErrors' = $null
         }
         $paramConvertToScimPayload = @{}
         if ($AttributeMapping) { $paramConvertToScimPayload['AttributeMapping'] = $AttributeMapping }
-        $ScimBulkObjectInstance = $ScimBulkObject.psobject.Copy()
+        $ScimBulkObjectInstance = $ScimBulkObject.PSObject.Copy()
     }
 
     process {
         foreach ($obj in $InputObject) {
 
             $ScimOperationObject = [PSCustomObject][ordered]@{
-                "method" = "POST"
-                "bulkId" = [string](New-Guid)
-                "path"   = "/Users"
-                "data"   = ConvertTo-ScimPayload $obj -ScimSchemaNamespace $ScimSchemaNamespace -PassThru @paramConvertToScimPayload
+                'method' = 'POST'
+                'bulkId' = [string](New-Guid)
+                'path'   = '/Users'
+                'data'   = ConvertTo-ScimPayload $obj -ScimSchemaNamespace $ScimSchemaNamespace -PassThru @paramConvertToScimPayload
             }
             $ScimBulkObjectInstance.Operations.Add($ScimOperationObject)
 
@@ -257,8 +284,8 @@ function ConvertTo-ScimBulkPayload {
             if ($OperationsPerRequest -gt 0 -and $ScimBulkObjectInstance.Operations.Count -ge $OperationsPerRequest) {
                 if ($PassThru) { $ScimBulkObjectInstance }
                 else { ConvertTo-Json $ScimBulkObjectInstance -Depth 10 }
-                $ScimBulkObjectInstance = $ScimBulkObject.psobject.Copy()
-                $ScimBulkObjectInstance.Operations = New-Object System.Collections.Generic.List[pscustomobject]
+                $ScimBulkObjectInstance = $ScimBulkObject.PSObject.Copy()
+                $ScimBulkObjectInstance.Operations = New-Object System.Collections.Generic.List[PSCustomObject]
             }
         }
     }
@@ -289,9 +316,9 @@ function ConvertTo-ScimPayload {
         # Map input properties to SCIM attributes
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         [hashtable] $AttributeMapping = @{
-            "externalId" = "externalId"
-            "userName"   = "userName"
-            "active"     = "active"
+            'externalId' = 'externalId'
+            'userName'   = 'userName'
+            'active'     = 'active'
         },
         # PassThru Object
         [Parameter(Mandatory = $false)]
@@ -315,7 +342,9 @@ function ConvertTo-ScimPayload {
             foreach ($_AttributeMapping in $AttributeMapping.GetEnumerator()) {
 
                 if ($_AttributeMapping.Key -is [string] -and $_AttributeMapping.Key.StartsWith('urn:')) {
-                    if (!$TargetObject['schemas'].Contains($_AttributeMapping.Key)) { $TargetObject['schemas'] += $_AttributeMapping.Key }
+                    # Fix: nested mapping targets may not include a schemas property; initialize to avoid null-method failures on .Contains().
+                    if ($null -eq $TargetObject['schemas']) { $TargetObject['schemas'] = [string[]]@() }
+                    if ($TargetObject['schemas'] -notcontains $_AttributeMapping.Key) { $TargetObject['schemas'] += $_AttributeMapping.Key }
                 }
 
                 if ($_AttributeMapping.Value -is [array]) {
@@ -389,7 +418,7 @@ function ConvertTo-ScimPayload {
                 [Parameter(Mandatory = $true)]
                 [scriptblock] $ScriptBlock
             )
-    
+
             process {
                 ## Using Import-PowerShellDataFile to load a scriptblock wraps it in another scriptblock so handling that with loop
                 $ScriptBlockResult = $ScriptBlock
@@ -406,7 +435,7 @@ function ConvertTo-ScimPayload {
         foreach ($obj in $InputObject) {
             ## Generate Core SCIM Data Structure
             $ScimObject = [ordered]@{
-                schemas = [string[]]("urn:ietf:params:scim:schemas:core:2.0:User", "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User")
+                schemas = [string[]]('urn:ietf:params:scim:schemas:core:2.0:User', 'urn:ietf:params:scim:schemas:extension:enterprise:2.0:User')
                 #id = [string](New-Guid)
             }
 
@@ -446,21 +475,21 @@ function Invoke-AzureADBulkScimRequest {
 
         ## Connect to MgGraph Module
         #Connect-MgGraph -Scopes 'Directory.ReadWrite.All' -ErrorAction Stop
-    #    $previousProfile = Get-MgProfile
-     #   if ($previousProfile.Name -ne 'beta') {
-      #      Select-MgProfile -Name 'beta'
-       # }
+        #    $previousProfile = Get-MgProfile
+        #   if ($previousProfile.Name -ne 'beta') {
+        #      Select-MgProfile -Name 'beta'
+        # }
 
         ## Lookup Service Principal
         $ServicePrincipalId = Get-MgServicePrincipal -Filter "id eq '$ServicePrincipalId' or appId eq '$ServicePrincipalId'" -Select id | Select-Object -ExpandProperty id
         #$ServicePrincipal = Get-MgServicePrincipal -ServicePrincipalId $ServicePrincipalId -ErrorAction Stop
-        $SyncJob = Get-MgServicePrincipalSynchronizationJob -ServicePrincipalId $ServicePrincipalId -ErrorAction Stop
-        if ($RestartService)
-        {
+        # Fix: always select one job to prevent array-to-scalar runtime issues when multiple sync jobs exist.
+        $SyncJob = Get-PrimarySynchronizationJob -ServicePrincipalId $ServicePrincipalId
+        if ($RestartService) {
             Suspend-MgServicePrincipalSynchronizationJob -ServicePrincipalId $ServicePrincipalId -SynchronizationJobId $SyncJob.Id
         }
     }
-    
+
     process {
         foreach ($_body in $Body) {
             Invoke-MgGraphRequest -Method POST -Uri "https://graph.microsoft.com/beta/servicePrincipals/$ServicePrincipalId/synchronization/jobs/$($SyncJob.Id)/bulkUpload" -ContentType 'application/scim+json' -Body $_body
@@ -468,13 +497,12 @@ function Invoke-AzureADBulkScimRequest {
     }
 
     end {
-        if ($RestartService)
-        {
+        if ($RestartService) {
             Start-MgServicePrincipalSynchronizationJob -ServicePrincipalId $ServicePrincipalId -SynchronizationJobId $SyncJob.Id
         }
-   #     if ($previousProfile.Name -ne (Get-MgProfile).Name) {
-    #        Select-MgProfile -Name $previousProfile.Name
-     #   }
+        #     if ($previousProfile.Name -ne (Get-MgProfile).Name) {
+        #        Select-MgProfile -Name $previousProfile.Name
+        #   }
     }
 }
 
@@ -506,19 +534,20 @@ function Set-AzureADProvisioningAppSchema {
 
         ## Connect to MgGraph Module
         #Connect-MgGraph -Scopes 'Directory.ReadWrite.All' -ErrorAction Stop
-     #   $previousProfile = Get-MgProfile
-      #  if ($previousProfile.Name -ne 'beta') {
-       #     Select-MgProfile -Name 'beta'
+        #   $previousProfile = Get-MgProfile
+        #  if ($previousProfile.Name -ne 'beta') {
+        #     Select-MgProfile -Name 'beta'
         #}
 
         ## Lookup Service Principal
         $ServicePrincipalId = Get-MgServicePrincipal -Filter "id eq '$ServicePrincipalId' or appId eq '$ServicePrincipalId'" -Select id | Select-Object -ExpandProperty id
         #$ServicePrincipal = Get-MgServicePrincipal -ServicePrincipalId $ServicePrincipalId -ErrorAction Stop
-        $SyncJob = Get-MgServicePrincipalSynchronizationJob -ServicePrincipalId $ServicePrincipalId
+        # Fix: schema update path also requires a single deterministic synchronization job id.
+        $SyncJob = Get-PrimarySynchronizationJob -ServicePrincipalId $ServicePrincipalId
         # Get the current Schema of the application
         $SyncJobSchema = Get-MgServicePrincipalSynchronizationJobSchema -ServicePrincipalId $servicePrincipalId -SynchronizationJobId $SyncJob.Id
     }
-    
+
     process {
         if ($UpdateComplete) { return }
 
@@ -530,7 +559,7 @@ function Set-AzureADProvisioningAppSchema {
             $AttributeNames = $InputObject[0].Keys
         }
         else {
-            $AttributeNames = $InputObject[0].psobject.Properties.Name
+            $AttributeNames = $InputObject[0].PSObject.Properties.Name
         }
 
         ## Add custom schema attributes
@@ -546,10 +575,10 @@ function Set-AzureADProvisioningAppSchema {
                     #defaultValue = $null
                     flowNullValues    = $false
                     multivalued       = $false
-                    mutability        = "ReadWrite"
+                    mutability        = 'ReadWrite'
                     name              = "$ScimSchemaNamespace`:$AttributeName"
                     required          = $false
-                    type              = "String"
+                    type              = 'String'
                     apiExpressions    = @()
                     metadata          = @()
                     referencedObjects = @()
@@ -567,9 +596,9 @@ function Set-AzureADProvisioningAppSchema {
     }
 
     end {
-     #   if ($previousProfile.Name -ne (Get-MgProfile).Name) {
-      #      Select-MgProfile -Name $previousProfile.Name
-       # }
+        #   if ($previousProfile.Name -ne (Get-MgProfile).Name) {
+        #      Select-MgProfile -Name $previousProfile.Name
+        # }
     }
 }
 
@@ -589,35 +618,36 @@ function Get-ProvisioningCycleIdHistory {
     )
 
     begin {
-     #   $previousProfile = Get-MgProfile
-      #  if ($previousProfile.Name -ne 'beta') {
-       #     Select-MgProfile -Name 'beta'
+        #   $previousProfile = Get-MgProfile
+        #  if ($previousProfile.Name -ne 'beta') {
+        #     Select-MgProfile -Name 'beta'
         #}
 
         $ServicePrincipalId = Get-MgServicePrincipal -Filter "id eq '$ServicePrincipalId' or appId eq '$ServicePrincipalId'" -Select id | Select-Object -ExpandProperty id
-        $SyncJob = Get-MgServicePrincipalSynchronizationJob -ServicePrincipalId $ServicePrincipalId -ErrorAction Stop
-        [string[]] $cylceIDs = @()
+    # Fix: cycle history queries must bind to one concrete synchronization job to avoid invalid filter construction.
+        $SyncJob = Get-PrimarySynchronizationJob -ServicePrincipalId $ServicePrincipalId
+        [string[]] $cycleIDs = @()
     }
 
     process {
         $qryStatement = "jobid eq '$($SyncJob.Id)'"
         for ($i = 0; $i -lt $NumberOfCycles; $i++) {
-            if ($cylceIDs.Count -gt 0) {
-                $qryStatement += " and cycleId ne '$($cylceIDs[-1])'"
+            if ($cycleIDs.Count -gt 0) {
+                $qryStatement += " and cycleId ne '$($cycleIDs[-1])'"
             }
             $CycleLogEntry = Get-MgAuditLogProvisioning -Filter $qryStatement -Top 1
             if ($null -ne $CycleLogEntry -and $null -ne $CycleLogEntry.CycleId) {
                 $CycleLogEntry.CycleId
-                $cylceIDs += $CycleLogEntry.CycleId
+                $cycleIDs += $CycleLogEntry.CycleId
             }
             else { break }
         }
     }
 
     end {
-     #   if ($previousProfile.Name -ne (Get-MgProfile).Name) {
-      #      Select-MgProfile -Name $previousProfile.Name
-       # }
+        #   if ($previousProfile.Name -ne (Get-MgProfile).Name) {
+        #      Select-MgProfile -Name $previousProfile.Name
+        # }
     }
 }
 
@@ -649,15 +679,15 @@ function Get-ProvisioningCycleLogs {
 
                 foreach ($log in $CycleLogsByChangeId) {
                     [PSCustomObject][ordered]@{
-                        "ChangeId"         = $log.Group[0].ChangeId
-                        "SourceId"         = $log.Group[0].SourceIdentity.Id
-                        "TargetId"         = $log.Group[0].TargetIdentity.Id
-                        "DisplayName"      = $log.Group[0].TargetIdentity.DisplayName
-                        "Action"           = $log.Group.ProvisioningAction
-                        "Status"           = $log.Group.ProvisioningStatusInfo.Status
-                        "ActivityDateTime" = $log.Group[0].ActivityDateTime
-                        "CycleId"          = $log.Group[0].CycleId
-                        "ProvisioningLogs" = $log.Group
+                        'ChangeId'         = $log.Group[0].ChangeId
+                        'SourceId'         = $log.Group[0].SourceIdentity.Id
+                        'TargetId'         = $log.Group[0].TargetIdentity.Id
+                        'DisplayName'      = $log.Group[0].TargetIdentity.DisplayName
+                        'Action'           = $log.Group.ProvisioningAction
+                        'Status'           = $log.Group.ProvisioningStatusInfo.Status
+                        'ActivityDateTime' = $log.Group[0].ActivityDateTime
+                        'CycleId'          = $log.Group[0].CycleId
+                        'ProvisioningLogs' = $log.Group
                     }
                 }
             }
@@ -694,7 +724,7 @@ function Get-ProvisioningLogStatistics {
 
     begin {
         function New-CycleSummary ($CycleId) {
-            return [pscustomobject][ordered]@{
+            return [PSCustomObject][ordered]@{
                 CycleId          = $CycleId
                 StartDateTime    = $null
                 EndDateTime      = $null
@@ -765,7 +795,20 @@ function Get-ProvisioningLogStatistics {
             if ($CycleTracker.ChangeIds.Add($ProvisioningLog.ChangeId)) { $CycleSummary.Changes++ }
             if ($CycleTracker.UserIds.Add($ProvisioningLog.SourceIdentity.Id)) { $CycleSummary.Users++ }
 
-            $CycleSummary.ActionStatistics | Where-Object Action -EQ $ProvisioningLog.ProvisioningAction | ForEach-Object { $_.($ProvisioningLog.ProvisioningStatusInfo.Status)++ }
+            $ActionStatistics = $CycleSummary.ActionStatistics | Where-Object Action -EQ $ProvisioningLog.ProvisioningAction | Select-Object -First 1
+            if ($null -eq $ActionStatistics) {
+                # Fix: unknown actions from API payloads should not break statistics processing; classify under Other.
+                $ActionStatistics = $CycleSummary.ActionStatistics | Where-Object Action -EQ 'Other' | Select-Object -First 1
+            }
+
+            $StatusName = [string]$ProvisioningLog.ProvisioningStatusInfo.Status
+            if ($ActionStatistics.PSObject.Properties.Name -contains $StatusName) {
+                $ActionStatistics.$StatusName++
+            }
+            else {
+                # Fix: unknown status names should be tolerated and tracked as warnings instead of throwing property errors.
+                $ActionStatistics.Warning++
+            }
         }
     }
 
@@ -782,10 +825,10 @@ function Get-ProvisioningLogStatistics {
 
             if ($WriteToConsole) {
                 Write-Host ('')
-                Write-Host ("CycleId: {0}" -f ($CycleSummary.CycleId -join ', '))
-                Write-Host ("Timespan: {0} - {1} ({2})" -f $CycleSummary.StartDateTime, $CycleSummary.EndDateTime, ($CycleSummary.EndDateTime - $CycleSummary.StartDateTime))
-                Write-Host ("Total Changes: {0}" -f $CycleSummary.Changes)
-                Write-Host ("Total Users: {0}" -f $CycleSummary.Users)
+                Write-Host ('CycleId: {0}' -f ($CycleSummary.CycleId -join ', '))
+                Write-Host ('Timespan: {0} - {1} ({2})' -f $CycleSummary.StartDateTime, $CycleSummary.EndDateTime, ($CycleSummary.EndDateTime - $CycleSummary.StartDateTime))
+                Write-Host ('Total Changes: {0}' -f $CycleSummary.Changes)
+                Write-Host ('Total Users: {0}' -f $CycleSummary.Users)
                 Write-Host ('')
 
                 $TableRowPattern = '{0,-12} {1,7} {2,7} {3,7} {4,7} {5,7}'
@@ -812,10 +855,10 @@ if ($ClientCertificate) {
 }
 elseif ($ClientId) {
     $paramConnectMgGraph['ClientId'] = $ClientId
-    $paramConnectMgGraph['Scopes'] = 'Application.ReadWrite.All', 'AuditLog.Read.All','SynchronizationData-User.Upload' 
+    $paramConnectMgGraph['Scopes'] = 'Application.ReadWrite.All', 'AuditLog.Read.All', 'SynchronizationData-User.Upload'
 }
 else {
-    $paramConnectMgGraph['Scopes'] = 'Application.ReadWrite.All', 'AuditLog.Read.All','SynchronizationData-User.Upload'
+    $paramConnectMgGraph['Scopes'] = 'Application.ReadWrite.All', 'AuditLog.Read.All', 'SynchronizationData-User.Upload'
 }
 
 switch ($PSCmdlet.ParameterSetName) {
@@ -823,17 +866,33 @@ switch ($PSCmdlet.ParameterSetName) {
         Test-ScimAttributeMapping $AttributeMapping -ScimSchemaNamespace 'urn:ietf:params:scim:schemas:core:2.0:User'
     }
     'GenerateScimPayload' {
-        if (Test-ScimAttributeMapping $AttributeMapping -ScimSchemaNamespace 'urn:ietf:params:scim:schemas:core:2.0:User') {
-            Import-Csv -Path $Path | ConvertTo-ScimBulkPayload -ScimSchemaNamespace $ScimSchemaNamespace -AttributeMapping $AttributeMapping
+        # Fix: AttributeMapping is optional for this parameter set; only pass/validate it when supplied to prevent mandatory-parameter binding failures.
+        $paramConvertToScimBulkPayload = @{
+            ScimSchemaNamespace = $ScimSchemaNamespace
         }
+
+        if ($AttributeMapping) {
+            if (-not (Test-ScimAttributeMapping $AttributeMapping -ScimSchemaNamespace 'urn:ietf:params:scim:schemas:core:2.0:User')) { break }
+            $paramConvertToScimBulkPayload['AttributeMapping'] = $AttributeMapping
+        }
+
+        Import-Csv -Path $Path | ConvertTo-ScimBulkPayload @paramConvertToScimBulkPayload
     }
     'SendScimRequest' {
-        if (Test-ScimAttributeMapping $AttributeMapping -ScimSchemaNamespace 'urn:ietf:params:scim:schemas:core:2.0:User') {
-            Import-Module Microsoft.Graph.Applications -ErrorAction Stop
-            Connect-MgGraph @paramConnectMgGraph -ErrorAction Stop | Out-Null
-
-            Import-Csv -Path $Path | ConvertTo-ScimBulkPayload -ScimSchemaNamespace $ScimSchemaNamespace -AttributeMapping $AttributeMapping | Invoke-AzureADBulkScimRequest -ServicePrincipalId $ServicePrincipalId -ErrorAction Stop
+        # Fix: AttributeMapping is optional for this parameter set; keep request generation functional when omitted.
+        $paramConvertToScimBulkPayload = @{
+            ScimSchemaNamespace = $ScimSchemaNamespace
         }
+
+        if ($AttributeMapping) {
+            if (-not (Test-ScimAttributeMapping $AttributeMapping -ScimSchemaNamespace 'urn:ietf:params:scim:schemas:core:2.0:User')) { break }
+            $paramConvertToScimBulkPayload['AttributeMapping'] = $AttributeMapping
+        }
+
+        Import-Module Microsoft.Graph.Applications -ErrorAction Stop
+        Connect-MgGraph @paramConnectMgGraph -ErrorAction Stop | Out-Null
+
+        Import-Csv -Path $Path | ConvertTo-ScimBulkPayload @paramConvertToScimBulkPayload | Invoke-AzureADBulkScimRequest -ServicePrincipalId $ServicePrincipalId -ErrorAction Stop
     }
     'UpdateScimSchema' {
         Import-Module Microsoft.Graph.Applications -ErrorAction Stop
@@ -842,9 +901,9 @@ switch ($PSCmdlet.ParameterSetName) {
         Get-Content -Path $Path -First 1 | Set-AzureADProvisioningAppSchema -ScimSchemaNamespace $ScimSchemaNamespace -ServicePrincipalId $ServicePrincipalId
     }
     'GetPreviousCycleLogs' {
-        Import-Module Microsoft.Graph.Applications,Microsoft.Graph.Reports -ErrorAction Stop
+        Import-Module Microsoft.Graph.Applications, Microsoft.Graph.Reports -ErrorAction Stop
         Connect-MgGraph @paramConnectMgGraph -ErrorAction Stop | Out-Null
-       
+
         Get-ProvisioningCycleIdHistory $ServicePrincipalId -NumberOfCycles $NumberOfCycles | Get-ProvisioningCycleLogs -SummarizeByChangeId -ShowCycleStatistics
     }
 }
