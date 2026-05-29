@@ -1,0 +1,23 @@
+node_modules/
+client/node_modules/
+client/build/
+.env
+.env.local
+.env.production
+.env.*.local
+uploads/
+*.log
+.DS_Store
+package-lock.json
+client/package-lock.json
+
+# Certificates and keys
+*.pem
+*.crt
+*.cer
+*.key
+*.pfx
+*.p12
+*.jks
+*.keystore
+certs/

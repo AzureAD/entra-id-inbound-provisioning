@@ -1,0 +1,1197 @@
+/* ============================================================
+   Entra Provisioning Client — Fluent 2 Design System
+   Based on https://fluent2.microsoft.design/design-principles
+   - Natural on every platform
+   - Built for focus (less clutter, calm UI)
+   - One for all, all for one (accessible)
+   - Unmistakably Microsoft (Segoe UI, brand color, shapes)
+   ============================================================ */
+
+/* ── Fluent 2 Design Tokens — Light Theme ── */
+:root {
+  /* Brand */
+  --brand-primary: #0f6cbd;
+  --brand-hover: #115ea3;
+  --brand-pressed: #0c3b5e;
+  --brand-selected: #0f6cbd;
+  --brand-bg1: #ebf3fc;
+  --brand-bg2: #d0e2f7;
+
+  /* Neutrals */
+  --color-neutral-foreground1: #242424;
+  --color-neutral-foreground2: #424242;
+  --color-neutral-foreground3: #616161;
+  --color-neutral-foreground4: #707070;
+  --color-neutral-foreground-disabled: #bdbdbd;
+  --color-neutral-bg1: #ffffff;
+  --color-neutral-bg2: #fafafa;
+  --color-neutral-bg3: #f5f5f5;
+  --color-neutral-bg4: #f0f0f0;
+  --color-neutral-bg-disabled: #f0f0f0;
+  --color-neutral-stroke1: #d1d1d1;
+  --color-neutral-stroke2: #e0e0e0;
+  --color-neutral-stroke3: #f0f0f0;
+  --color-neutral-stroke-accessible: #616161;
+
+  /* Semantic — Status */
+  --color-status-success-fg: #0e700e;
+  --color-status-success-bg: #f1faf1;
+  --color-status-success-border: #9fd89f;
+  --color-status-warning-fg: #bc4b09;
+  --color-status-warning-bg: #fff9f5;
+  --color-status-warning-border: #fdcfb4;
+  --color-status-danger-fg: #b10e1c;
+  --color-status-danger-bg: #fdf3f4;
+  --color-status-danger-border: #eeacb2;
+  --color-status-info-fg: #0078d4;
+  --color-status-info-bg: #f0f6ff;
+
+  /* Elevation (Fluent 2 shadow ramp) */
+  --shadow2:  0 1px 2px rgba(0,0,0,0.14), 0 0 2px rgba(0,0,0,0.12);
+  --shadow4:  0 2px 4px rgba(0,0,0,0.14), 0 0 2px rgba(0,0,0,0.12);
+  --shadow8:  0 4px 8px rgba(0,0,0,0.14), 0 0 2px rgba(0,0,0,0.12);
+  --shadow16: 0 8px 16px rgba(0,0,0,0.14), 0 0 2px rgba(0,0,0,0.12);
+  --shadow28: 0 14px 28px rgba(0,0,0,0.24), 0 0 8px rgba(0,0,0,0.20);
+
+  /* Shapes (Fluent 2 corner radius tokens) */
+  --radius-none: 0px;
+  --radius-small: 2px;
+  --radius-medium: 4px;
+  --radius-large: 8px;
+  --radius-xlarge: 12px;
+  --radius-circular: 50%;
+
+  /* Stroke */
+  --stroke-thin: 1px;
+  --stroke-thick: 2px;
+
+  /* Typography — Segoe UI Variable */
+  --font-family: 'Segoe UI Variable', 'Segoe UI', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-s: 8px;
+  --spacing-m: 12px;
+  --spacing-l: 16px;
+  --spacing-xl: 20px;
+  --spacing-xxl: 24px;
+
+  /* Motion (Fluent 2: ease-out for entrances, ease-in-out for transitions) */
+  --motion-duration-fast: 100ms;
+  --motion-duration-normal: 200ms;
+  --motion-duration-slow: 300ms;
+  --motion-ease: cubic-bezier(0.33, 0, 0.67, 1);
+
+  /* Surfaces */
+  --surface: var(--color-neutral-bg1);
+  --surface-sunken: var(--color-neutral-bg3);
+  --page-bg: var(--color-neutral-bg3);
+  --sidebar-bg: var(--color-neutral-bg2);
+  --sidebar-active-bg: var(--brand-bg1);
+
+  /* Code block */
+  --code-bg: #1e1e1e;
+  --code-text: #d4d4d4;
+
+  /* Custom attrs accent */
+  --custom-attr-bg: #f3e8ff;
+  --custom-attr-text: #6b21a8;
+  --custom-attr-accent: #7c3aed;
+  --custom-attr-label-bg: #faf5ff;
+  --custom-attr-label-border: #e9d5ff;
+}
+
+/* ── Fluent 2 Design Tokens — Dark Theme ── */
+[data-theme="dark"] {
+  --brand-primary: #479ef5;
+  --brand-hover: #62abf5;
+  --brand-pressed: #2886de;
+  --brand-selected: #479ef5;
+  --brand-bg1: #082338;
+  --brand-bg2: #0a2e4a;
+
+  --color-neutral-foreground1: #e0e0e0;
+  --color-neutral-foreground2: #c7c7c7;
+  --color-neutral-foreground3: #adadad;
+  --color-neutral-foreground4: #999999;
+  --color-neutral-foreground-disabled: #5c5c5c;
+  --color-neutral-bg1: #1f1f1f;
+  --color-neutral-bg2: #1a1a1a;
+  --color-neutral-bg3: #141414;
+  --color-neutral-bg4: #0f0f0f;
+  --color-neutral-bg-disabled: #2e2e2e;
+  --color-neutral-stroke1: #404040;
+  --color-neutral-stroke2: #333333;
+  --color-neutral-stroke3: #2b2b2b;
+  --color-neutral-stroke-accessible: #adadad;
+
+  --color-status-success-fg: #54b054;
+  --color-status-success-bg: #052505;
+  --color-status-success-border: #1a7c1a;
+  --color-status-warning-fg: #f7a24b;
+  --color-status-warning-bg: #2b1400;
+  --color-status-warning-border: #8a4300;
+  --color-status-danger-fg: #dc626d;
+  --color-status-danger-bg: #2c0b0e;
+  --color-status-danger-border: #8b1923;
+  --color-status-info-fg: #479ef5;
+  --color-status-info-bg: #082338;
+
+  --shadow2:  0 1px 2px rgba(0,0,0,0.28), 0 0 2px rgba(0,0,0,0.14);
+  --shadow4:  0 2px 4px rgba(0,0,0,0.28), 0 0 2px rgba(0,0,0,0.14);
+  --shadow8:  0 4px 8px rgba(0,0,0,0.28), 0 0 2px rgba(0,0,0,0.14);
+  --shadow16: 0 8px 16px rgba(0,0,0,0.28), 0 0 2px rgba(0,0,0,0.14);
+  --shadow28: 0 14px 28px rgba(0,0,0,0.48), 0 0 8px rgba(0,0,0,0.40);
+
+  --surface: var(--color-neutral-bg1);
+  --surface-sunken: var(--color-neutral-bg3);
+  --page-bg: var(--color-neutral-bg4);
+  --sidebar-bg: var(--color-neutral-bg2);
+  --sidebar-active-bg: var(--brand-bg1);
+
+  --code-bg: #0d0d0d;
+  --code-text: #d4d4d4;
+
+  --custom-attr-bg: #2a1f3a;
+  --custom-attr-text: #c4a7f5;
+  --custom-attr-accent: #a78bfa;
+  --custom-attr-label-bg: #251d35;
+  --custom-attr-label-border: #3b2d5c;
+}
+
+/* ── Base Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-family);
+  font-size: 14px;
+  line-height: 20px;
+  background: var(--page-bg);
+  color: var(--color-neutral-foreground1);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── App Shell ── */
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ── Sidebar — Fluent 2 nav pane ── */
+.sidebar {
+  width: 256px;
+  background: var(--sidebar-bg);
+  border-right: var(--stroke-thin) solid var(--color-neutral-stroke3);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.sidebar-header {
+  padding: var(--spacing-xl);
+  border-bottom: var(--stroke-thin) solid var(--color-neutral-stroke3);
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-m);
+}
+
+.sidebar-brand svg { flex-shrink: 0; }
+
+.sidebar-brand-text h1 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-neutral-foreground1);
+  line-height: 20px;
+}
+
+.sidebar-brand-text p {
+  font-size: 12px;
+  color: var(--color-neutral-foreground3);
+  line-height: 16px;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: var(--spacing-s);
+}
+
+.sidebar-nav .nav-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-neutral-foreground3);
+  padding: var(--spacing-m) var(--spacing-m) var(--spacing-xs);
+}
+
+/* ── Nav Item — Fluent 2 tree item style ── */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s);
+  padding: var(--spacing-s) var(--spacing-m);
+  border-radius: var(--radius-medium);
+  cursor: pointer;
+  transition: background var(--motion-duration-fast) var(--motion-ease),
+              color var(--motion-duration-fast) var(--motion-ease);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--color-neutral-foreground2);
+  margin-bottom: 2px;
+  border: var(--stroke-thick) solid transparent;
+  position: relative;
+}
+
+.nav-item:hover {
+  background: var(--color-neutral-bg4);
+  color: var(--color-neutral-foreground1);
+}
+
+.nav-item.active {
+  background: var(--sidebar-active-bg);
+  color: var(--brand-primary);
+  font-weight: 600;
+}
+
+/* Fluent 2 active indicator pill */
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--brand-primary);
+}
+
+.nav-item.completed { color: var(--color-status-success-fg); }
+
+.nav-item .nav-number {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-circular);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--color-neutral-bg4);
+  color: var(--color-neutral-foreground3);
+  flex-shrink: 0;
+  transition: all var(--motion-duration-fast) var(--motion-ease);
+}
+
+.nav-item.active .nav-number {
+  background: var(--brand-primary);
+  color: #ffffff;
+}
+
+.nav-item.completed .nav-number {
+  background: var(--color-status-success-fg);
+  color: #ffffff;
+}
+
+.nav-item .nav-icon {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.sidebar-footer {
+  padding: var(--spacing-m) var(--spacing-l);
+  border-top: var(--stroke-thin) solid var(--color-neutral-stroke3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Fluent 2 subtle button */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s);
+  padding: 6px var(--spacing-m);
+  border-radius: var(--radius-medium);
+  border: var(--stroke-thin) solid var(--color-neutral-stroke2);
+  background: var(--surface);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-neutral-foreground2);
+  transition: all var(--motion-duration-fast) var(--motion-ease);
+  font-family: inherit;
+}
+
+.theme-toggle:hover {
+  background: var(--color-neutral-bg4);
+  border-color: var(--color-neutral-stroke1);
+  color: var(--color-neutral-foreground1);
+}
+
+.version-tag {
+  font-size: 10px;
+  color: var(--color-neutral-foreground4);
+  font-weight: 400;
+}
+
+/* ── Main Content ── */
+.main-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Fluent 2 command bar */
+.main-topbar {
+  background: var(--surface);
+  border-bottom: var(--stroke-thin) solid var(--color-neutral-stroke3);
+  padding: var(--spacing-m) var(--spacing-xxl);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.topbar-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s);
+}
+
+.topbar-title .step-icon { font-size: 20px; }
+
+.topbar-title h2 {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 22px;
+  color: var(--color-neutral-foreground1);
+}
+
+.topbar-title .step-count {
+  font-size: 12px;
+  color: var(--color-neutral-foreground3);
+  font-weight: 400;
+  background: var(--color-neutral-bg4);
+  padding: 2px 10px;
+  border-radius: var(--radius-medium);
+  line-height: 16px;
+}
+
+.main-body {
+  flex: 1;
+  padding: var(--spacing-xxl);
+  padding-bottom: 100px;
+  overflow-y: auto;
+}
+
+/* ── Bottom Action Bar ── */
+.bottom-bar {
+  position: sticky;
+  bottom: 0;
+  background: var(--surface);
+  border-top: var(--stroke-thin) solid var(--color-neutral-stroke3);
+  padding: var(--spacing-l) var(--spacing-xxl);
+  z-index: 10;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.06);
+}
+
+[data-theme="dark"] .bottom-bar {
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.28);
+}
+
+.bottom-bar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.bottom-bar-progress {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.progress-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-circular);
+  background: var(--color-neutral-stroke2);
+  transition: all var(--motion-duration-normal) var(--motion-ease);
+}
+
+.progress-dot.done { background: var(--color-status-success-fg); }
+
+.progress-dot.current {
+  background: var(--brand-primary);
+  width: 20px;
+  border-radius: var(--radius-medium);
+}
+
+.btn-next {
+  min-width: 120px;
+  justify-content: center;
+  padding: 10px var(--spacing-xxl);
+  font-size: 14px;
+}
+
+/* ── Cards — Fluent 2 surface with $shadow2 ── */
+.card {
+  background: var(--surface);
+  border: var(--stroke-thin) solid var(--color-neutral-stroke2);
+  border-radius: var(--radius-large);
+  padding: var(--spacing-xxl);
+  margin-bottom: var(--spacing-xl);
+  box-shadow: var(--shadow2);
+  transition: box-shadow var(--motion-duration-normal) var(--motion-ease);
+}
+
+.card:hover {
+  box-shadow: var(--shadow4);
+}
+
+.card h2 {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 26px;
+  margin-bottom: var(--spacing-xs);
+  color: var(--color-neutral-foreground1);
+}
+
+.card h3 {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  margin-bottom: var(--spacing-s);
+  color: var(--color-neutral-foreground2);
+}
+
+.card .subtitle {
+  font-size: 14px;
+  color: var(--color-neutral-foreground3);
+  margin-bottom: var(--spacing-xl);
+  line-height: 20px;
+}
+
+/* ── Form — Fluent 2 inputs ── */
+.form-group {
+  margin-bottom: var(--spacing-l);
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 20px;
+  margin-bottom: var(--spacing-xs);
+  color: var(--color-neutral-foreground1);
+}
+
+.form-group .hint {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--color-neutral-foreground3);
+  margin-bottom: var(--spacing-xs);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 8px var(--spacing-m);
+  border: var(--stroke-thin) solid var(--color-neutral-stroke1);
+  border-radius: var(--radius-medium);
+  font-size: 14px;
+  line-height: 20px;
+  font-family: inherit;
+  transition: border-color var(--motion-duration-fast) var(--motion-ease),
+              box-shadow var(--motion-duration-fast) var(--motion-ease);
+  background: var(--surface);
+  color: var(--color-neutral-foreground1);
+}
+
+/* Fluent 2: 2px brand bottom border on focus */
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: inset 0 -2px 0 0 var(--brand-primary);
+}
+
+.form-group input::placeholder {
+  color: var(--color-neutral-foreground4);
+}
+
+/* ── Buttons — Fluent 2 style ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: 8px var(--spacing-l);
+  border: none;
+  border-radius: var(--radius-medium);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  cursor: pointer;
+  transition: background var(--motion-duration-fast) var(--motion-ease),
+              color var(--motion-duration-fast) var(--motion-ease);
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+/* Fluent 2: brand fill, darkens on hover/press */
+.btn-primary {
+  background: var(--brand-primary);
+  color: #ffffff;
+}
+.btn-primary:hover { background: var(--brand-hover); }
+.btn-primary:active { background: var(--brand-pressed); }
+.btn-primary:disabled {
+  background: var(--color-neutral-bg-disabled);
+  color: var(--color-neutral-foreground-disabled);
+  cursor: not-allowed;
+}
+
+/* Fluent 2: outline button */
+.btn-secondary {
+  background: var(--surface);
+  color: var(--color-neutral-foreground1);
+  border: var(--stroke-thin) solid var(--color-neutral-stroke1);
+}
+.btn-secondary:hover {
+  background: var(--color-neutral-bg4);
+  border-color: var(--color-neutral-stroke-accessible);
+}
+.btn-secondary:disabled {
+  color: var(--color-neutral-foreground-disabled);
+  border-color: var(--color-neutral-stroke2);
+  cursor: not-allowed;
+  background: var(--surface);
+}
+
+.btn-success {
+  background: var(--color-status-success-fg);
+  color: #ffffff;
+}
+.btn-success:hover { filter: brightness(1.1); }
+
+.btn-danger {
+  background: var(--color-status-danger-fg);
+  color: #ffffff;
+}
+.btn-danger:hover { filter: brightness(1.1); }
+
+/* Fluent 2: subtle / ghost button */
+.btn-ghost {
+  background: transparent;
+  color: var(--color-neutral-foreground2);
+  padding: 6px var(--spacing-s);
+}
+.btn-ghost:hover {
+  background: var(--color-neutral-bg4);
+  color: var(--color-neutral-foreground1);
+}
+
+.btn-group {
+  display: flex;
+  gap: var(--spacing-s);
+  margin-top: var(--spacing-xl);
+}
+
+/* ── File Upload — Fluent 2 drop zone ── */
+.file-upload-zone {
+  border: var(--stroke-thick) dashed var(--color-neutral-stroke1);
+  border-radius: var(--radius-large);
+  padding: 48px;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--motion-duration-normal) var(--motion-ease);
+  background: var(--surface-sunken);
+}
+
+.file-upload-zone:hover,
+.file-upload-zone.dragover {
+  border-color: var(--brand-primary);
+  background: var(--brand-bg1);
+}
+
+.file-upload-zone .icon {
+  font-size: 40px;
+  margin-bottom: var(--spacing-m);
+}
+
+.file-upload-zone p {
+  color: var(--color-neutral-foreground3);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+/* ── Data Table — Fluent 2 data grid ── */
+.data-table-container {
+  overflow-x: auto;
+  margin-top: var(--spacing-l);
+  border: var(--stroke-thin) solid var(--color-neutral-stroke2);
+  border-radius: var(--radius-medium);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.data-table th {
+  background: var(--color-neutral-bg4);
+  padding: var(--spacing-s) var(--spacing-l);
+  text-align: left;
+  font-weight: 600;
+  border-bottom: var(--stroke-thin) solid var(--color-neutral-stroke1);
+  white-space: nowrap;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--color-neutral-foreground2);
+}
+
+.data-table td {
+  padding: var(--spacing-s) var(--spacing-l);
+  border-bottom: var(--stroke-thin) solid var(--color-neutral-stroke3);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-neutral-foreground1);
+}
+
+.data-table tr:hover td {
+  background: var(--color-neutral-bg4);
+}
+
+/* ── Mapping — Fluent 2 form layout ── */
+.mapping-section {
+  margin-bottom: var(--spacing-xxl);
+}
+
+.mapping-section h3 {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  margin-bottom: var(--spacing-m);
+  padding: var(--spacing-s) var(--spacing-m);
+  background: var(--brand-bg1);
+  border-radius: var(--radius-medium);
+  color: var(--brand-primary);
+}
+
+.mapping-row {
+  display: grid;
+  grid-template-columns: 1fr 32px 1fr;
+  gap: var(--spacing-s);
+  align-items: center;
+  margin-bottom: var(--spacing-xs);
+}
+
+.mapping-row .arrow {
+  text-align: center;
+  color: var(--color-neutral-foreground4);
+  font-size: 14px;
+}
+
+.mapping-label {
+  font-size: 13px;
+  padding: var(--spacing-s) var(--spacing-m);
+  background: var(--color-neutral-bg4);
+  border: var(--stroke-thin) solid var(--color-neutral-stroke2);
+  border-radius: var(--radius-medium);
+  transition: border-color var(--motion-duration-fast) var(--motion-ease);
+}
+
+.mapping-label .attr-name {
+  font-weight: 600;
+  color: var(--color-neutral-foreground1);
+}
+
+.mapping-label .attr-desc {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--color-neutral-foreground4);
+}
+
+.mapping-label .required-badge {
+  background: var(--color-status-danger-fg);
+  color: #ffffff;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: var(--radius-medium);
+  margin-left: 6px;
+  font-weight: 600;
+}
+
+.mapping-row select {
+  padding: var(--spacing-s) var(--spacing-m);
+  border: var(--stroke-thin) solid var(--color-neutral-stroke1);
+  border-radius: var(--radius-medium);
+  font-size: 14px;
+  line-height: 20px;
+  font-family: inherit;
+  background: var(--surface);
+  color: var(--color-neutral-foreground1);
+  transition: border-color var(--motion-duration-fast) var(--motion-ease),
+              box-shadow var(--motion-duration-fast) var(--motion-ease);
+}
+
+.mapping-row select:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: inset 0 -2px 0 0 var(--brand-primary);
+}
+
+/* ── Payload Preview ── */
+.payload-preview { margin-top: var(--spacing-l); }
+
+.payload-preview pre {
+  background: var(--code-bg);
+  color: var(--code-text);
+  padding: var(--spacing-xl);
+  border-radius: var(--radius-medium);
+  overflow-x: auto;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  max-height: 500px;
+  overflow-y: auto;
+  line-height: 1.6;
+  border: var(--stroke-thin) solid var(--color-neutral-stroke2);
+}
+
+/* ── Alerts — Fluent 2 message bar ── */
+.alert {
+  padding: var(--spacing-m) var(--spacing-l);
+  border-radius: var(--radius-medium);
+  margin-bottom: var(--spacing-l);
+  font-size: 14px;
+  line-height: 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-s);
+  border: var(--stroke-thin) solid transparent;
+}
+
+.alert-info {
+  background: var(--color-status-info-bg);
+  border-color: var(--brand-primary);
+  color: var(--color-neutral-foreground1);
+}
+
+.alert-success {
+  background: var(--color-status-success-bg);
+  border-color: var(--color-status-success-border);
+}
+
+.alert-warning {
+  background: var(--color-status-warning-bg);
+  border-color: var(--color-status-warning-border);
+}
+
+.alert-error {
+  background: var(--color-status-danger-bg);
+  border-color: var(--color-status-danger-border);
+}
+
+/* ── Results ── */
+.result-item {
+  padding: var(--spacing-m) var(--spacing-l);
+  border: var(--stroke-thin) solid var(--color-neutral-stroke2);
+  border-radius: var(--radius-medium);
+  margin-bottom: var(--spacing-s);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-m);
+  background: var(--surface);
+  transition: background var(--motion-duration-fast) var(--motion-ease);
+}
+
+.result-item:hover { background: var(--color-neutral-bg4); }
+
+.result-item.success {
+  border-left: 3px solid var(--color-status-success-fg);
+}
+
+.result-item.error {
+  border-left: 3px solid var(--color-status-danger-fg);
+}
+
+.status-badge {
+  padding: 2px var(--spacing-s);
+  border-radius: var(--radius-medium);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+}
+
+.status-badge.success {
+  background: var(--color-status-success-bg);
+  color: var(--color-status-success-fg);
+}
+.status-badge.error {
+  background: var(--color-status-danger-bg);
+  color: var(--color-status-danger-fg);
+}
+
+/* ── Spinner — Fluent 2 ── */
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: var(--stroke-thick) solid var(--color-neutral-stroke2);
+  border-top-color: var(--brand-primary);
+  border-radius: var(--radius-circular);
+  animation: fluent-spin 0.8s linear infinite;
+}
+
+@keyframes fluent-spin { to { transform: rotate(360deg); } }
+
+/* ── Data Source Picker — Fluent 2 selection cards ── */
+.source-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-l);
+  margin-top: var(--spacing-l);
+}
+
+.source-card {
+  position: relative;
+  border: var(--stroke-thick) solid var(--color-neutral-stroke2);
+  border-radius: var(--radius-large);
+  padding: var(--spacing-xxl);
+  cursor: pointer;
+  transition: all var(--motion-duration-normal) var(--motion-ease);
+  background: var(--surface);
+}
+
+.source-card:hover {
+  border-color: var(--brand-primary);
+  box-shadow: var(--shadow8);
+}
+
+.source-card.selected {
+  border-color: var(--brand-primary);
+  background: var(--brand-bg1);
+}
+
+.source-icon {
+  font-size: 32px;
+  margin-bottom: var(--spacing-m);
+}
+
+.source-card h3 {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 22px;
+  margin-bottom: var(--spacing-xs);
+  color: var(--color-neutral-foreground1);
+}
+
+.source-card p {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--color-neutral-foreground3);
+  margin-bottom: var(--spacing-m);
+}
+
+.source-features {
+  list-style: none;
+  padding: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--color-neutral-foreground2);
+}
+
+.source-features li { padding: 3px 0; }
+
+.source-features li::before {
+  content: '✓ ';
+  color: var(--color-status-success-fg);
+  font-weight: 700;
+}
+
+.source-check {
+  position: absolute;
+  top: var(--spacing-m);
+  right: var(--spacing-m);
+  width: 24px;
+  height: 24px;
+  background: var(--brand-primary);
+  color: #ffffff;
+  border-radius: var(--radius-circular);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+/* ── HRMS Connector Grid ── */
+.connector-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--spacing-m);
+  margin-top: var(--spacing-l);
+}
+
+.connector-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-m);
+  padding: var(--spacing-l);
+  border: var(--stroke-thin) solid var(--color-neutral-stroke2);
+  border-radius: var(--radius-large);
+  cursor: pointer;
+  transition: all var(--motion-duration-fast) var(--motion-ease);
+  background: var(--surface);
+}
+
+.connector-card:hover {
+  border-color: var(--brand-primary);
+  box-shadow: var(--shadow4);
+}
+
+.connector-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.connector-info { flex: 1; min-width: 0; }
+
+.connector-info strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 2px;
+  color: var(--color-neutral-foreground1);
+}
+
+.connector-category {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--brand-primary);
+  background: var(--brand-bg1);
+  padding: 2px var(--spacing-s);
+  border-radius: var(--radius-medium);
+  margin-bottom: var(--spacing-xs);
+}
+
+.connector-info p {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--color-neutral-foreground3);
+}
+
+.connector-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-m) 0;
+  border-bottom: var(--stroke-thin) solid var(--color-neutral-stroke3);
+  margin-bottom: var(--spacing-l);
+}
+
+/* ── Provisioning Target Selector ── */
+.target-selector {
+  display: flex;
+  gap: var(--spacing-m);
+  margin-top: var(--spacing-xs);
+}
+
+.target-option {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-s);
+  padding: var(--spacing-m) var(--spacing-l);
+  border: var(--stroke-thick) solid var(--color-neutral-stroke2);
+  border-radius: var(--radius-large);
+  cursor: pointer;
+  transition: all var(--motion-duration-fast) var(--motion-ease);
+  background: var(--surface);
+}
+
+.target-option:hover {
+  border-color: var(--brand-primary);
+  background: var(--brand-bg1);
+}
+
+.target-option.selected {
+  border-color: var(--brand-primary);
+  background: var(--brand-bg1);
+}
+
+.target-option input[type="radio"] {
+  margin-top: 3px;
+  accent-color: var(--brand-primary);
+}
+
+.target-option div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.target-option strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-neutral-foreground1);
+}
+
+.target-option span {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--color-neutral-foreground3);
+}
+
+/* ── Custom Attributes Section ── */
+.custom-attrs-section h3 {
+  background: var(--custom-attr-bg);
+  color: var(--custom-attr-text);
+}
+
+.custom-attrs-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.custom-attrs-toggle input[type="radio"] {
+  accent-color: var(--custom-attr-accent);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.custom-attrs-config {
+  margin-top: var(--spacing-m);
+}
+
+.custom-attr-add-row {
+  display: flex;
+  gap: var(--spacing-s);
+  align-items: center;
+  margin-bottom: var(--spacing-l);
+}
+
+.custom-attr-name-input {
+  flex: 1;
+  padding: 8px var(--spacing-m);
+  border: var(--stroke-thin) solid var(--color-neutral-stroke1);
+  border-radius: var(--radius-medium);
+  font-size: 14px;
+  line-height: 20px;
+  font-family: inherit;
+  background: var(--surface);
+  color: var(--color-neutral-foreground1);
+}
+
+.custom-attr-name-input:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: inset 0 -2px 0 0 var(--brand-primary);
+}
+
+.custom-attr-type-select {
+  padding: 8px var(--spacing-m);
+  border: var(--stroke-thin) solid var(--color-neutral-stroke1);
+  border-radius: var(--radius-medium);
+  font-size: 14px;
+  line-height: 20px;
+  font-family: inherit;
+  min-width: 120px;
+  background: var(--surface);
+  color: var(--color-neutral-foreground1);
+}
+
+.custom-attr-type-select:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: inset 0 -2px 0 0 var(--brand-primary);
+}
+
+.custom-attr-type-badge {
+  display: inline-block;
+  background: var(--custom-attr-bg);
+  color: var(--custom-attr-accent);
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: var(--radius-medium);
+  margin-left: var(--spacing-s);
+  font-weight: 600;
+}
+
+.custom-attrs-list {
+  margin-top: var(--spacing-s);
+}
+
+.custom-attr-row .mapping-label {
+  background: var(--custom-attr-label-bg);
+  border-color: var(--custom-attr-label-border);
+}
+
+.custom-attrs-empty {
+  padding: var(--spacing-xxl);
+  text-align: center;
+  color: var(--color-neutral-foreground4);
+  font-size: 14px;
+  line-height: 20px;
+  background: var(--surface-sunken);
+  border: var(--stroke-thick) dashed var(--color-neutral-stroke2);
+  border-radius: var(--radius-large);
+}
+
+/* ── Responsive — Fluent 2: natural on every platform ── */
+@media (max-width: 768px) {
+  .app-shell { flex-direction: column; }
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: static;
+    flex-direction: row;
+    overflow-x: auto;
+    border-right: none;
+    border-bottom: var(--stroke-thin) solid var(--color-neutral-stroke3);
+  }
+  .sidebar-header { display: none; }
+  .sidebar-nav {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-s);
+    white-space: nowrap;
+  }
+  .sidebar-nav .nav-label { display: none; }
+  .nav-item { padding: var(--spacing-s) var(--spacing-m); }
+  .nav-item.active::before { display: none; }
+  .sidebar-footer { display: none; }
+  .main-body { padding: var(--spacing-l); }
+  .mapping-row { grid-template-columns: 1fr; }
+  .mapping-row .arrow { transform: rotate(90deg); }
+  .source-grid { grid-template-columns: 1fr; }
+  .connector-grid { grid-template-columns: 1fr; }
+  .custom-attr-add-row { flex-direction: column; }
+  .target-selector { flex-direction: column; }
+}
