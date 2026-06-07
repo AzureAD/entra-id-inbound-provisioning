@@ -8,8 +8,6 @@ client/build/
 uploads/
 *.log
 .DS_Store
-package-lock.json
-client/package-lock.json
 
 # Certificates and keys
 *.pem

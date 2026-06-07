@@ -57,7 +57,11 @@ export default function App() {
 
   // Persist state to localStorage
   useEffect(() => { localStorage.setItem(STORAGE_PREFIX + 'step', JSON.stringify(step)); }, [step]);
-  useEffect(() => { localStorage.setItem(STORAGE_PREFIX + 'config', JSON.stringify(config)); }, [config]);
+  useEffect(() => {
+    // Exclude sensitive credentials from localStorage persistence
+    const { clientSecret, certificatePassword, certificateKey, ...safeConfig } = config;
+    localStorage.setItem(STORAGE_PREFIX + 'config', JSON.stringify(safeConfig));
+  }, [config]);
   useEffect(() => { localStorage.setItem(STORAGE_PREFIX + 'dataSource', JSON.stringify(dataSource)); }, [dataSource]);
   useEffect(() => { localStorage.setItem(STORAGE_PREFIX + 'mapping', JSON.stringify(mapping)); }, [mapping]);
   useEffect(() => { localStorage.setItem(STORAGE_PREFIX + 'customAttributes', JSON.stringify(customAttributes)); }, [customAttributes]);

@@ -110,7 +110,9 @@ function buildUserData(row, mapping, customSchemaNamespace, customAttributeTypes
 /**
  * Set a value in a nested object using dot notation.
  * Handles paths like "name.givenName" → { name: { givenName: value } }
- * and array paths like "addresses.0.streetAddress"
+ * and numeric array indices like "addresses.0.streetAddress" → { addresses: [{ streetAddress: value }] }
+ * Note: bracket notation (e.g. "addresses[0].streetAddress") is NOT supported;
+ * use dot-separated numeric indices instead.
  */
 function setNestedValue(obj, path, value) {
   const parts = path.split('.');

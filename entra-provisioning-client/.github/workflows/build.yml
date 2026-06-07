@@ -3,8 +3,16 @@ name: Build and Deploy
 on:
   push:
     branches: [main]
+    paths:
+      - 'entra-provisioning-client/**'
   pull_request:
     branches: [main]
+    paths:
+      - 'entra-provisioning-client/**'
+
+defaults:
+  run:
+    working-directory: entra-provisioning-client
 
 jobs:
   build:
@@ -22,18 +30,18 @@ jobs:
         run: npm ci
 
       - name: Install client dependencies
-        working-directory: ./client
+        working-directory: entra-provisioning-client/client
         run: npm ci
 
       - name: Build client
-        working-directory: ./client
+        working-directory: entra-provisioning-client/client
         run: npm run build
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: client-build
-          path: client/build/
+          path: entra-provisioning-client/client/build/
 
   docker:
     needs: build
@@ -45,11 +53,12 @@ jobs:
 
       - name: Build Docker image
         run: docker build -t entra-provisioning-client .
+        working-directory: entra-provisioning-client
 
       - name: Tag image
         run: |
-          docker tag entra-provisioning-client ghcr.io/${{ github.repository }}:latest
-          docker tag entra-provisioning-client ghcr.io/${{ github.repository }}:${{ github.sha }}
+          docker tag entra-provisioning-client ghcr.io/${{ github.repository }}/entra-provisioning-client:latest
+          docker tag entra-provisioning-client ghcr.io/${{ github.repository }}/entra-provisioning-client:${{ github.sha }}
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -60,5 +69,5 @@ jobs:
 
       - name: Push Docker image
         run: |
-          docker push ghcr.io/${{ github.repository }}:latest
-          docker push ghcr.io/${{ github.repository }}:${{ github.sha }}
+          docker push ghcr.io/${{ github.repository }}/entra-provisioning-client:latest
+          docker push ghcr.io/${{ github.repository }}/entra-provisioning-client:${{ github.sha }}

@@ -327,11 +327,10 @@ export default function AttributeMapping({ csvHeaders, mapping, setMapping, cust
         <h3>
           <label className="custom-attrs-toggle">
             <input
-              type="radio"
+              type="checkbox"
               name="customAttrsEnabled"
               checked={customAttributes.enabled}
-              onClick={toggleCustomAttrs}
-              readOnly
+              onChange={toggleCustomAttrs}
             />
             Custom SCIM Schema Extension
           </label>

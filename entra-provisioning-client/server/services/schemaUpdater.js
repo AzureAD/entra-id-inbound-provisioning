@@ -198,6 +198,11 @@ async function ensureCustomSchemaAttributes(accessToken, endpoint, customAttribu
     );
   }
 
+  // Ensure attributes array exists
+  if (!userObject.attributes) {
+    userObject.attributes = [];
+  }
+
   // ---- Custom attribute definitions ----
   const attributesAdded = [];
   if (hasCustom) {

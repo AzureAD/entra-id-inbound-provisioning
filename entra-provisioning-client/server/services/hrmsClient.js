@@ -112,6 +112,10 @@ function flattenObject(obj, prefix = '', result = {}) {
  * Returns { headers: string[], rows: object[], totalFetched: number }
  */
 async function fetchHRMSData(connectorDef, connectorConfig, maxRecords = 1000) {
+  if (!connectorConfig || typeof connectorConfig.baseUrl !== 'string' || !connectorConfig.baseUrl.trim()) {
+    throw new Error('HRMS connector configuration requires a valid baseUrl. Please provide the API endpoint URL.');
+  }
+
   const authHeaders = await getAuthHeader(connectorConfig);
   const responseMapping = connectorDef.responseMapping || {};
 

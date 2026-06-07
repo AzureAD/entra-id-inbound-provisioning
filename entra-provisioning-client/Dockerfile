@@ -26,4 +26,5 @@ COPY --from=builder /app/client/build ./client/build
 EXPOSE 3001
 
 ENV NODE_ENV=production
+ENV HOST=0.0.0.0
 CMD ["node", "server/index.js"]
