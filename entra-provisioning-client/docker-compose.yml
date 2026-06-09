@@ -8,7 +8,7 @@ services:
     environment:
       - HOST=0.0.0.0
       - NODE_ENV=production
-    env_file:
-      - path: .env
-        required: false
+    # Uncomment to load environment variables from .env file:
+    # env_file:
+    #   - .env
     restart: unless-stopped

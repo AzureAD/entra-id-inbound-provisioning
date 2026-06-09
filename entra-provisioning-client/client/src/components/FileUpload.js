@@ -10,7 +10,8 @@ export default function FileUpload({ onUploadComplete }) {
 
   const handleFile = async (file) => {
     if (!file) return;
-    if (!file.name.endsWith('.csv') && !file.name.endsWith('.txt')) {
+    const lowerName = file.name.toLowerCase();
+    if (!lowerName.endsWith('.csv') && !lowerName.endsWith('.txt')) {
       setError('Please upload a CSV file (.csv or .txt)');
       return;
     }

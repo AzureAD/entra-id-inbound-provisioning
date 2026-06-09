@@ -16,6 +16,7 @@ const {
  * @returns {Object[]} Array of SCIM BulkRequest payloads
  */
 function buildScimBulkPayloads(rows, mapping, customSchemaNamespace = null, operationsPerRequest = 50, customAttributeTypes = null) {
+  operationsPerRequest = Math.min(Math.max(Number.isInteger(operationsPerRequest) ? operationsPerRequest : 50, 1), 200);
   const payloads = [];
   let currentOps = [];
 
@@ -46,7 +47,6 @@ function wrapBulkRequest(operations) {
   return {
     schemas: [SCIM_BULK_REQUEST_SCHEMA],
     Operations: operations,
-    failOnErrors: null,
   };
 }
 

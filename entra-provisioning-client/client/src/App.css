@@ -1078,7 +1078,7 @@ body {
   font-weight: 600;
 }
 
-.custom-attrs-toggle input[type="radio"] {
+.custom-attrs-toggle input[type="checkbox"] {
   accent-color: var(--custom-attr-accent);
   width: 16px;
   height: 16px;
