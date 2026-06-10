@@ -112,13 +112,23 @@ export default function App() {
 
         <div className="sidebar-nav">
           <div className="nav-label">Workflow</div>
-          {STEPS.map((s, i) => (
+          {STEPS.map((s, i) => {
+            const goToStep = () => {
+              if (i <= step) setStep(i);
+              else if (i === step + 1 && canProceed(step)) setStep(i);
+            };
+            return (
             <div
               key={i}
               className={`nav-item ${getStepStatus(i)}`}
-              onClick={() => {
-                if (i <= step) setStep(i);
-                else if (i === step + 1 && canProceed(step)) setStep(i);
+              role="button"
+              tabIndex={0}
+              onClick={goToStep}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  goToStep();
+                }
               }}
             >
               <div className="nav-number">
@@ -127,7 +137,8 @@ export default function App() {
               <span className="nav-icon">{s.icon}</span>
               <span>{s.label}</span>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="sidebar-footer">

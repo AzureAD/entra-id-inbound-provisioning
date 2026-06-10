@@ -14,7 +14,15 @@ export default function DataSourcePicker({ selected, onSelect }) {
         {/* CSV Option */}
         <div
           className={`source-card ${selected === 'csv' ? 'selected' : ''}`}
+          role="button"
+          tabIndex={0}
           onClick={() => onSelect('csv')}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onSelect('csv');
+            }
+          }}
         >
           <div className="source-icon">📄</div>
           <h3>CSV / File Upload</h3>
@@ -30,13 +38,21 @@ export default function DataSourcePicker({ selected, onSelect }) {
         {/* HRMS Option */}
         <div
           className={`source-card ${selected === 'hrms' ? 'selected' : ''}`}
+          role="button"
+          tabIndex={0}
           onClick={() => onSelect('hrms')}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onSelect('hrms');
+            }
+          }}
         >
           <div className="source-icon">🔌</div>
           <h3>HRMS / API Integration</h3>
           <p>Connect directly to your HR system and pull employee data via API.</p>
           <ul className="source-features">
-            <li>Workday, SAP SF, BambooHR, ADP, Oracle, and more</li>
+            <li>BambooHR, ADP Workforce Now, Oracle HCM Cloud</li>
             <li>Custom REST API support</li>
             <li>Automatic field discovery</li>
           </ul>

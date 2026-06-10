@@ -121,18 +121,21 @@ async function fetchHRMSData(connectorDef, connectorConfig, maxRecords = 1000) {
 
   // Build the URL
   let baseUrl = connectorConfig.baseUrl.replace(/\/+$/, '');
-  const endpointPath = connectorConfig.endpoint || connectorConfig.workersEndpoint || connectorDef.configFields.find(f => f.key === 'workersEndpoint')?.default || connectorDef.responseMapping?.path || '';
+  let endpointPath = connectorConfig.endpoint || connectorConfig.workersEndpoint || connectorDef.configFields.find(f => f.key === 'workersEndpoint')?.default || connectorDef.responseMapping?.path || '';
   const entity = connectorConfig.entity || connectorDef.configFields.find(f => f.key === 'entity')?.default || '';
-  
+
   let url = baseUrl;
-  if (endpointPath) url += endpointPath;
-  if (entity) url += `/${entity}`;
+  if (endpointPath) {
+    // Ensure exactly one leading slash so baseUrl + path can't fuse (e.g. "...comapi/...").
+    url += endpointPath.startsWith('/') ? endpointPath : `/${endpointPath}`;
+  }
+  if (entity) url += `/${encodeURIComponent(entity)}`;
 
   // Add select fields if available
   const selectFields = connectorConfig.selectFields;
   if (selectFields) {
     const sep = url.includes('?') ? '&' : '?';
-    url += `${sep}$select=${selectFields}`;
+    url += `${sep}$select=${encodeURIComponent(selectFields)}`;
   }
 
   // Parse custom headers

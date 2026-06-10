@@ -2,6 +2,7 @@ const express = require('express');
 const { buildScimBulkPayloads } = require('../services/scimBuilder');
 const { getAccessToken, sendBulkUpload } = require('../services/entraAuth');
 const { parseEndpointIds } = require('../services/schemaUpdater');
+const { validateGraphEndpoint } = require('../services/validateGraphEndpoint');
 
 const router = express.Router();
 
@@ -59,6 +60,12 @@ router.post('/send', async (req, res) => {
     }
     if (!config || !config.endpoint) {
       return res.status(400).json({ error: 'Connection configuration is incomplete. Provide at least an endpoint.' });
+    }
+
+    // Validate the client-supplied endpoint before attaching a Graph token to it.
+    const endpointCheck = validateGraphEndpoint(config.endpoint);
+    if (!endpointCheck.valid) {
+      return res.status(400).json({ error: endpointCheck.error });
     }
 
     const authMethod = config.authMethod || 'certificate';
@@ -138,6 +145,12 @@ router.post('/logs', async (req, res) => {
     const { config } = req.body;
     if (!config?.endpoint) {
       return res.status(400).json({ error: 'Provisioning API endpoint is required.' });
+    }
+
+    // Validate the client-supplied endpoint before attaching a Graph token to it.
+    const endpointCheck = validateGraphEndpoint(config.endpoint);
+    if (!endpointCheck.valid) {
+      return res.status(400).json({ error: endpointCheck.error });
     }
 
     let accessToken;

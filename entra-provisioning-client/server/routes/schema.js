@@ -1,6 +1,7 @@
 const express = require('express');
 const { getAccessToken } = require('../services/entraAuth');
 const { ensureCustomSchemaAttributes } = require('../services/schemaUpdater');
+const { validateGraphEndpoint } = require('../services/validateGraphEndpoint');
 
 const router = express.Router();
 
@@ -18,6 +19,12 @@ router.post('/update', async (req, res) => {
 
     if (!config?.endpoint) {
       return res.status(400).json({ error: 'Provisioning API endpoint is required.' });
+    }
+
+    // Validate the client-supplied endpoint before attaching a Graph token to it.
+    const endpointCheck = validateGraphEndpoint(config.endpoint);
+    if (!endpointCheck.valid) {
+      return res.status(400).json({ error: endpointCheck.error });
     }
 
     const hasCustom = customAttributes?.enabled && customAttributes?.namespace && customAttributes?.attributes?.length;

@@ -92,7 +92,15 @@ export default function HRMSConnector({ onDataLoaded }) {
             <div
               key={c.id}
               className="connector-card"
+              role="button"
+              tabIndex={0}
               onClick={() => handleSelectConnector(c.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleSelectConnector(c.id);
+                }
+              }}
             >
               <div className="connector-icon">{c.icon}</div>
               <div className="connector-info">

@@ -27,10 +27,10 @@ While this tutorial uses a CSV file and HRMS connectors as systems of record, th
 | # | Scenario | How to implement |
 |---|---|---|
 | 1 | CSV file from any HR system | Upload the CSV file directly in the browser. The client parses headers and presents them for mapping. |
-| 2 | HRMS with REST API (Workday, BambooHR, ADP, etc.) | Use the built-in HRMS connector. Configure API credentials, test the connection, and fetch employee data. |
-| 3 | SAP SuccessFactors | Use the built-in SAP SuccessFactors connector with Basic authentication. |
+| 2 | BambooHR | Use the built-in BambooHR connector with API key authentication. Configure the API base URL and key, test the connection, and fetch employee data. |
+| 3 | ADP Workforce Now | Use the built-in ADP Workforce Now connector with OAuth2 authentication. |
 | 4 | Oracle HCM Cloud | Use the built-in Oracle HCM Cloud connector with Basic authentication. |
-| 5 | Custom REST API | Use the generic Custom REST API connector. Supports no auth, basic, bearer, API key, and OAuth2 authentication types. |
+| 5 | Custom REST API | Use the generic Custom REST API connector for any other system (e.g. Workday, SAP SuccessFactors). Supports no auth, basic, bearer, API key, and OAuth2 authentication types. |
 
 After reading the source data, the client converts each record to a SCIM [Core User](https://datatracker.ietf.org/doc/html/rfc7643#section-4.1) + [Enterprise User](https://datatracker.ietf.org/doc/html/rfc7643#section-4.3) representation and sends it as a bulk request to the Microsoft Entra provisioning [/bulkUpload](https://learn.microsoft.com/en-us/graph/api/synchronization-synchronizationjob-post-bulkupload) API endpoint.
 
