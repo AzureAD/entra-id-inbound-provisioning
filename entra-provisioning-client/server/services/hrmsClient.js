@@ -32,15 +32,24 @@ async function getAuthHeader(connectorConfig) {
       const creds = connectorConfig.username && connectorConfig.password
         ? `${connectorConfig.username}:${connectorConfig.password}`
         : (connectorConfig.authValue || '');
+      if (!creds) {
+        throw new Error('Username/password (or authValue) is required for basic authentication.');
+      }
       const encoded = Buffer.from(creds).toString('base64');
       return { 'Authorization': `Basic ${encoded}` };
     }
 
     case 'bearer':
+      if (!connectorConfig.authValue) {
+        throw new Error('A bearer token (authValue) is required for bearer authentication.');
+      }
       return { 'Authorization': `Bearer ${connectorConfig.authValue}` };
 
     case 'apikey':
       // BambooHR uses basic auth with apikey:x
+      if (!connectorConfig.apiKey) {
+        throw new Error('API key is required for apikey authentication.');
+      }
       return { 'Authorization': `Basic ${Buffer.from(connectorConfig.apiKey + ':x').toString('base64')}` };
 
     case 'oauth2': {

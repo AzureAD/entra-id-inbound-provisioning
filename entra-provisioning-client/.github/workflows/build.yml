@@ -10,6 +10,10 @@ on:
     paths:
       - 'entra-provisioning-client/**'
 
+permissions:
+  contents: read
+  packages: write
+
 defaults:
   run:
     working-directory: entra-provisioning-client

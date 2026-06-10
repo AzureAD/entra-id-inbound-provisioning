@@ -84,7 +84,7 @@ export default function App() {
       }
       case 1: return dataSource !== null;
       case 2: return csvData !== null;
-      case 3: return Object.keys(mapping).length > 0 && mapping.externalId;
+      case 3: return Object.keys(mapping).length > 0 && mapping.externalId && mapping.userName;
       case 4: return true;
       default: return false;
     }

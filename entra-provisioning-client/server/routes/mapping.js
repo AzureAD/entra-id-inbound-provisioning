@@ -32,7 +32,7 @@ router.post('/validate', (req, res) => {
     errors.push('externalId is required — it uniquely identifies each user in the source system.');
   }
   if (!mapping['userName']) {
-    warnings.push('userName is recommended — it is used as the login identifier.');
+    errors.push('userName is required — it is used as the login identifier.');
   }
 
   // Validate CSV column references

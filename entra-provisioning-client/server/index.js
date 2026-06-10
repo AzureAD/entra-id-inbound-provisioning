@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware
 // Restrict CORS: allow the CRA dev server origin in development; same-origin in production.
-const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3000')
+const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3000,http://127.0.0.1:3000')
   .split(',')
   .map(o => o.trim())
   .filter(Boolean);
