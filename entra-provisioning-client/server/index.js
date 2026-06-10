@@ -21,11 +21,16 @@ const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3000')
   .filter(Boolean);
 app.use(cors({
   origin(origin, callback) {
-    // Allow same-origin/non-browser requests (no Origin header) and whitelisted dev origins.
+    // Allow non-browser requests (no Origin header) and whitelisted dev origins.
     if (!origin || allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-    return callback(new Error(`Origin ${origin} not allowed by CORS`));
+    // For any other origin, don't add CORS headers (callback(null, false)) rather than
+    // throwing. Browsers send an Origin header even on same-origin non-GET requests (e.g.
+    // the production app's own POST /api/upload), so throwing here would 500 those requests.
+    // Returning false lets same-origin requests proceed normally while still preventing
+    // disallowed cross-origin sites from reading responses.
+    return callback(null, false);
   },
 }));
 app.use(express.json({ limit: '50mb' }));
