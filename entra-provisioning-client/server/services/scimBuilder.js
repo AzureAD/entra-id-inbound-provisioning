@@ -67,7 +67,7 @@ function buildUserData(row, mapping, customSchemaNamespace, customAttributeTypes
     const value = row[csvColumn];
     if (value === undefined || value === null || value === '') continue;
 
-    // Parse the SCIM path: e.g. "name.givenName", "enterprise.department", "addresses[0].streetAddress"
+    // Parse the SCIM path: e.g. "name.givenName", "enterprise.department", "addresses.0.streetAddress"
     if (scimPath.startsWith('enterprise.')) {
       hasEnterpriseAttrs = true;
       const attrName = scimPath.substring('enterprise.'.length);

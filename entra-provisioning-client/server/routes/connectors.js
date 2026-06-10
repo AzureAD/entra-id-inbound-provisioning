@@ -63,7 +63,10 @@ router.post('/:id/fetch', async (req, res) => {
   }
 
   try {
-    const maxRecords = req.body.maxRecords || 1000;
+    const parsedMax = parseInt(req.body.maxRecords, 10);
+    const maxRecords = Number.isFinite(parsedMax) && parsedMax > 0
+      ? Math.min(parsedMax, 1000)
+      : 1000;
     const { headers, rows, totalFetched } = await fetchHRMSData(connector, req.body, maxRecords);
 
     // Store in app.locals just like CSV upload does

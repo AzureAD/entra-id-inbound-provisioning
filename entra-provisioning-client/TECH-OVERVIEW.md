@@ -32,12 +32,12 @@ A **local-run web application** that converts employee data (from CSV files or H
 
 | Layer | Technology | Version | Purpose |
 |-------|-----------|---------|---------|
-| **Runtime** | Node.js | 20+ | Server & build toolchain |
+| **Runtime** | Node.js | 18+ (20 recommended) | Server & build toolchain |
 | **Backend** | Express | 4.18.2 | REST API framework |
 | **Frontend** | React | 18.2 | SPA UI (create-react-app) |
 | **Auth SDK** | @azure/identity | 4.2 | OAuth2 client-credentials flow for Entra ID |
 | **CSV Parsing** | csv-parse | 5.5.3 | Stream-based CSV-to-JSON with BOM support |
-| **File Upload** | Multer | 1.4.5 | Multipart form handling (50 MB limit, memory storage) |
+| **File Upload** | Multer | 1.4.5-lts.1 | Multipart form handling (50 MB limit, memory storage) |
 | **Unique IDs** | uuid v4 | 9.0 | SCIM `bulkId` generation |
 | **Dev Tooling** | concurrently | 8.2 | Run server + client dev servers in parallel |
 | **Containerization** | Docker | Multi-stage Alpine | Production image (~150 MB) |
@@ -51,7 +51,7 @@ No database. No external state. All data lives in-memory (`app.locals`) for the 
 ### Routes
 | Route | File | Verb(s) | What it does |
 |-------|------|---------|-------------|
-| `/api/upload` | `routes/upload.js` | POST, GET | Accepts CSV upload (Multer), parses via csv-parse, stores rows in `app.locals.csvData`. GET returns stored data. |
+| `/api/upload` | `routes/upload.js` | POST, GET | `POST /api/upload` accepts CSV upload (Multer), parses via csv-parse, stores rows in `app.locals.csvData`. `GET /api/upload/data` returns stored data. |
 | `/api/mapping/schema` | `routes/mapping.js` | GET | Returns the full SCIM attribute catalogue (Core User + Enterprise User). |
 | `/api/mapping/validate` | `routes/mapping.js` | POST | Validates a mapping object against uploaded CSV headers; enforces `externalId` as required. |
 | `/api/provisioning/preview` | `routes/provisioning.js` | POST | Builds SCIM BulkRequest JSON from rows + mapping without sending. Returns payload array. |
@@ -66,7 +66,7 @@ No database. No external state. All data lives in-memory (`app.locals`) for the 
 |---------|------|----------------|
 | **csvParser** | `services/csvParser.js` | Wraps `csv-parse` in a Promise; returns `{ headers, rows }`. |
 | **scimBuilder** | `services/scimBuilder.js` | Converts flat row objects + mapping into SCIM User resources. Handles dot-notation paths (`name.givenName`), enterprise attributes, custom schema namespaces, and boolean coercion. Chunks into BulkRequest payloads (default 50 ops/request). |
-| **entraAuth** | `services/entraAuth.js` | `getAccessToken()` — uses `ClientSecretCredential` (client-credentials grant) to fetch a token scoped to `https://graph.microsoft.com/.default`. `sendBulkUpload()` — POSTs payload with `Content-Type: application/scim+json`. |
+| **entraAuth** | `services/entraAuth.js` | `getAccessToken()` — uses `ClientCertificateCredential` (default/preferred) or `ClientSecretCredential` (client-credentials grant) to fetch a token scoped to `https://graph.microsoft.com/.default`. `sendBulkUpload()` — POSTs payload with `Content-Type: application/scim+json`. |
 | **hrmsClient** | `services/hrmsClient.js` | Generic HTTP client for any HRMS API. Supports OAuth2, Basic, API Key, and Bearer auth types. Handles pagination, JSON-path data extraction (`d.results`, `data.employees`), and recursive object flattening. |
 
 ### Connector Registry (`server/connectors/registry.js`)
@@ -88,7 +88,7 @@ Exports:
 - `SCIM_CORE_USER_SCHEMA` = `urn:ietf:params:scim:schemas:core:2.0:User`
 - `SCIM_ENTERPRISE_USER_SCHEMA` = `urn:ietf:params:scim:schemas:extension:enterprise:2.0:User`
 - `SCIM_BULK_REQUEST_SCHEMA` = `urn:ietf:params:scim:api:messages:2.0:BulkRequest`
-- `SCIM_ATTRIBUTES[]` — flat array of attribute definitions, each with `scimPath`, `displayName`, `description`, `type`, `required`, `category` (Core User / Enterprise User), and `subAttributes` for complex types (name, emails, phoneNumbers, addresses).
+- `SCIM_ATTRIBUTES` — an object keyed by schema URN (Core User / Enterprise User). Each entry contains a `simple` array (attributes with `name`, `type`, `required`, `description`) and a `complex` array for complex types (name, emails, phoneNumbers, addresses) whose entries carry nested `subAttributes`.
 
 ---
 

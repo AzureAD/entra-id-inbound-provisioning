@@ -159,7 +159,7 @@ function mapAttributeType(uiType) {
  * @returns {Object} { updated, attributesAdded, mappingsAdded, message }
  */
 async function ensureCustomSchemaAttributes(accessToken, endpoint, customAttributes, mapping) {
-  const hasCustom = customAttributes?.namespace && customAttributes?.attributes?.length;
+  const hasCustom = customAttributes?.enabled && customAttributes?.namespace && customAttributes?.attributes?.length;
   const hasStandard = mapping && Object.keys(mapping).length > 0;
 
   if (!hasCustom && !hasStandard) {

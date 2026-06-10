@@ -99,10 +99,12 @@ export default function SubmitResult({ mapping, config, customAttributes }) {
       }
     };
 
-    // Initial delay before first poll (give Entra time to process)
-    setTimeout(() => {
-      poll();
+    // Initial delay before first poll (give Entra time to process).
+    // Track the timeout handle in pollRef so unmount cleanup can cancel it.
+    pollRef.current = setTimeout(() => {
+      // Set up the interval first so early-stop logic in poll() clears the right handle.
       pollRef.current = setInterval(poll, 10000); // Poll every 10s
+      poll();
     }, 5000);
   };
 

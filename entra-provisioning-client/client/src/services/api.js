@@ -10,6 +10,7 @@ export async function uploadCsv(file) {
 
 export async function getScimSchema() {
   const res = await fetch(`${API_BASE}/api/mapping/schema`);
+  if (!res.ok) throw new Error('Failed to load schema');
   return res.json();
 }
 
@@ -19,6 +20,10 @@ export async function validateMapping(mapping) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ mapping }),
   });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to validate mapping');
+  }
   return res.json();
 }
 
