@@ -22,9 +22,10 @@ const CONNECTORS = {
     configFields: [
       { key: 'baseUrl', label: 'API Base URL', placeholder: 'https://api.bamboohr.com/api/gateway.php/<companyDomain>/v1', required: true },
       { key: 'apiKey', label: 'API Key', placeholder: 'BambooHR API key', required: true, secret: true },
-      { key: 'fields', label: 'Fields to Retrieve', placeholder: 'id,firstName,lastName,workEmail,...', required: false },
     ],
     responseMapping: {
+      // BambooHR employee directory endpoint, appended to baseUrl (which ends at /v1).
+      path: '/employees/directory',
       dataPath: 'employees',
       totalPath: null,
       pagingParam: null,
@@ -57,6 +58,8 @@ const CONNECTORS = {
       { key: 'sslCertPath', label: 'SSL Client Certificate Path (optional)', placeholder: '/path/to/cert.pem', required: false },
     ],
     responseMapping: {
+      // ADP Workforce Now Workers API path, appended to baseUrl (e.g. https://api.adp.com).
+      path: '/hr/v2/workers',
       dataPath: 'workers',
       totalPath: 'meta.totalNumber',
       pagingParam: '$skip',

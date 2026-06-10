@@ -70,15 +70,13 @@ No database. No external state. All data lives in-memory (`app.locals`) for the 
 | **hrmsClient** | `services/hrmsClient.js` | Generic HTTP client for any HRMS API. Supports OAuth2, Basic, API Key, and Bearer auth types. Handles pagination, JSON-path data extraction (`d.results`, `data.employees`), and recursive object flattening. |
 
 ### Connector Registry (`server/connectors/registry.js`)
-Pre-built connector definitions for **6 HRMS systems**:
+Pre-built connector definitions for **4 HRMS systems**:
 
 | Connector | Auth Type | Key Fields |
 |-----------|-----------|------------|
-| Workday | OAuth2 | REST Workers endpoint, tenant URL |
-| SAP SuccessFactors | Basic Auth | OData User endpoint, company ID |
-| BambooHR | API Key | Subdomain, API key |
-| ADP Workforce Now | OAuth2 | Client cert endpoint |
-| Oracle HCM Cloud | Basic Auth | REST Workers URL |
+| BambooHR | API Key | API base URL (incl. company domain), API key |
+| ADP Workforce Now | OAuth2 | API base URL, client ID/secret, token endpoint |
+| Oracle HCM Cloud | Basic Auth | REST base URL, username/password, resource |
 | Custom REST API | Configurable | Any URL, any auth |
 
 Each connector defines: `id`, `name`, `description`, `icon`, `category`, `authType`, `configFields[]`, `responseMapping` (data path + pagination), and `sampleFieldHints`.

@@ -139,7 +139,7 @@ entra-provisioning-client/
 6. Open **http://localhost:3001** in your browser.
 
 > [!NOTE]
-> Your credentials never leave your machine. The server binds to `127.0.0.1` and is not reachable from other machines. Nothing is sent to any cloud service until you explicitly click **Send** in the final step.
+> Your credentials never leave your machine. With the default `npm`/local run, the server binds to `127.0.0.1` (loopback only) and is not reachable from other machines. When running in Docker, the container sets `HOST=0.0.0.0` so it can accept connections inside the container — host exposure is then controlled by how you publish the port (see [Docker deployment](#docker-deployment-optional)). Nothing is sent to any cloud service until you explicitly click **Send** in the final step.
 
 ## Step 2: Configure the provisioning app connection
 
@@ -182,8 +182,6 @@ Choose a data source:
 
     | System | Auth type |
     |---|---|
-    | Workday | OAuth2 |
-    | SAP SuccessFactors | Basic |
     | BambooHR | API Key |
     | ADP Workforce Now | OAuth2 |
     | Oracle HCM Cloud | Basic |
@@ -294,8 +292,10 @@ myHrms: {
 # Build the image
 docker build -t entra-provisioning-client .
 
-# Run (credentials entered in-browser, no .env needed)
-docker run -p 3001:3001 entra-provisioning-client
+# Run (credentials entered in-browser, no .env needed).
+# Publish on loopback only so the app stays local to this machine.
+# Change to -p 0.0.0.0:3001:3001 (or -p 3001:3001) if you intentionally need remote access.
+docker run -p 127.0.0.1:3001:3001 entra-provisioning-client
 ```
 
 Or with Docker Compose:
@@ -321,7 +321,7 @@ docker-compose up --build
 | Concern | How it's handled |
 |---|---|
 | Client secrets | Entered in-browser, held in memory only, never written to disk |
-| Network exposure | Server binds to `127.0.0.1` — not reachable from other machines |
+| Network exposure | Local/`npm` run binds to `127.0.0.1` (loopback only). In Docker the container uses `HOST=0.0.0.0`; the default published port is `127.0.0.1:3001:3001`, so it stays loopback-only unless you intentionally publish on all interfaces |
 | Data transmission | Nothing is sent to any cloud service until you explicitly click **Send** in the final step |
 | Git safety | `.env`, secrets, certificates, and build artifacts are all in `.gitignore` |
 

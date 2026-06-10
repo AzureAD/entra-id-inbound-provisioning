@@ -121,7 +121,7 @@ async function fetchHRMSData(connectorDef, connectorConfig, maxRecords = 1000) {
 
   // Build the URL
   let baseUrl = connectorConfig.baseUrl.replace(/\/+$/, '');
-  const endpointPath = connectorConfig.endpoint || connectorConfig.workersEndpoint || connectorDef.configFields.find(f => f.key === 'workersEndpoint')?.default || '';
+  const endpointPath = connectorConfig.endpoint || connectorConfig.workersEndpoint || connectorDef.configFields.find(f => f.key === 'workersEndpoint')?.default || connectorDef.responseMapping?.path || '';
   const entity = connectorConfig.entity || connectorDef.configFields.find(f => f.key === 'entity')?.default || '';
   
   let url = baseUrl;
