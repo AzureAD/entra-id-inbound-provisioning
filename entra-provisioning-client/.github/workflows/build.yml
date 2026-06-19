@@ -1,0 +1,77 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'entra-provisioning-client/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'entra-provisioning-client/**'
+
+permissions:
+  contents: read
+  packages: write
+
+defaults:
+  run:
+    working-directory: entra-provisioning-client
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install server dependencies
+        run: npm ci
+
+      - name: Install client dependencies
+        working-directory: entra-provisioning-client/client
+        run: npm ci
+
+      - name: Build client
+        working-directory: entra-provisioning-client/client
+        run: npm run build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-build
+          path: entra-provisioning-client/client/build/
+
+  docker:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t entra-provisioning-client .
+        working-directory: entra-provisioning-client
+
+      - name: Tag image
+        run: |
+          docker tag entra-provisioning-client ghcr.io/${{ github.repository }}/entra-provisioning-client:latest
+          docker tag entra-provisioning-client ghcr.io/${{ github.repository }}/entra-provisioning-client:${{ github.sha }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push Docker image
+        run: |
+          docker push ghcr.io/${{ github.repository }}/entra-provisioning-client:latest
+          docker push ghcr.io/${{ github.repository }}/entra-provisioning-client:${{ github.sha }}

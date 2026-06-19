@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  entra-provisioning-client:
+    build: .
+    ports:
+      # Publish on loopback only so the app stays local to this host.
+      # Change to "0.0.0.0:3001:3001" (or "3001:3001") if you intentionally need remote access.
+      - "127.0.0.1:3001:3001"
+    environment:
+      - HOST=0.0.0.0
+      - NODE_ENV=production
+    # Uncomment to load environment variables from .env file:
+    # env_file:
+    #   - .env
+    restart: unless-stopped
