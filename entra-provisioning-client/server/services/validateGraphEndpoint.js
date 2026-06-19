@@ -58,7 +58,8 @@ function validateGraphEndpoint(endpoint) {
     };
   }
 
-  if (!parsed.pathname.toLowerCase().endsWith('/bulkupload')) {
+  const normalizedPath = parsed.pathname.replace(/\/+$/, '').toLowerCase();
+  if (!normalizedPath.endsWith('/bulkupload')) {
     return {
       valid: false,
       error: "Provisioning API endpoint must be a Microsoft Graph bulkUpload URL (path ending in '/bulkUpload').",
